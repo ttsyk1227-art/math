@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>計算ドリル</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <h1>計算ドリル</h1>
+
+    <!-- 設定画面 -->
+    <section id="setup" class="card">
+      <fieldset>
+        <legend>計算の種類</legend>
+        <div class="choices" id="op-choices">
+          <label><input type="checkbox" name="op" value="+" checked> たし算</label>
+          <label><input type="checkbox" name="op" value="-" checked> ひき算</label>
+          <label><input type="checkbox" name="op" value="×"> かけ算</label>
+          <label><input type="checkbox" name="op" value="÷"> わり算</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>むずかしさ</legend>
+        <div class="choices">
+          <label><input type="radio" name="level" value="1" checked> かんたん（1けた）</label>
+          <label><input type="radio" name="level" value="2"> ふつう（2けた）</label>
+          <label><input type="radio" name="level" value="3"> むずかしい（3けた）</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>問題数</legend>
+        <div class="choices">
+          <label><input type="radio" name="count" value="10" checked> 10問</label>
+          <label><input type="radio" name="count" value="20"> 20問</label>
+          <label><input type="radio" name="count" value="50"> 50問</label>
+        </div>
+      </fieldset>
+
+      <p id="setup-error" class="error" hidden>計算の種類を1つ以上えらんでください。</p>
+      <button id="start-btn" class="primary">スタート</button>
+      <p id="best" class="best"></p>
+    </section>
+
+    <!-- 出題画面 -->
+    <section id="drill" class="card" hidden>
+      <div class="status">
+        <span id="progress">1 / 10</span>
+        <span id="timer">0.0 秒</span>
+      </div>
+      <div class="bar"><div id="bar-fill"></div></div>
+      <p id="question" class="question" aria-live="polite"></p>
+      <form id="answer-form" autocomplete="off">
+        <input id="answer" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="こたえ" required>
+        <button type="submit" class="primary">こたえる</button>
+      </form>
+      <p id="feedback" class="feedback" aria-live="polite"></p>
+      <div class="keypad" id="keypad">
+        <button type="button">7</button><button type="button">8</button><button type="button">9</button>
+        <button type="button">4</button><button type="button">5</button><button type="button">6</button>
+        <button type="button">1</button><button type="button">2</button><button type="button">3</button>
+        <button type="button" data-key="clear">C</button><button type="button">0</button><button type="button" data-key="back">⌫</button>
+      </div>
+      <button id="quit-btn" class="link">やめる</button>
+    </section>
+
+    <!-- 結果画面 -->
+    <section id="result" class="card" hidden>
+      <h2>けっか</h2>
+      <p class="score"><span id="score"></span></p>
+      <p id="result-time"></p>
+      <p id="result-message" class="message"></p>
+      <div id="mistakes-wrap" hidden>
+        <h3>まちがえた問題</h3>
+        <ul id="mistakes"></ul>
+      </div>
+      <div class="actions">
+        <button id="retry-btn" class="primary">もう一度</button>
+        <button id="back-btn">設定にもどる</button>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
