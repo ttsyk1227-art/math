@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>順列・組合せトレーナー</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Maru+Gothic:wght@700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#home" class="brand">順列・組合せトレーナー</a>
+      <nav class="nav" aria-label="メニュー">
+        <a href="#formulas" data-view="formulas">公式</a>
+        <a href="#calc" data-view="calc">計算</a>
+        <a href="#word" data-view="word">文章題</a>
+        <a href="#classify" data-view="classify">見分け</a>
+        <a href="#exam" data-view="exam">演習</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ホーム -->
+    <section id="view-home" class="view">
+      <div class="hero">
+        <p class="eyebrow">数学A ・ 場合の数</p>
+        <h1>順列・組合せトレーナー</h1>
+        <p class="lead">「並べる」のか「選ぶ」のか。公式を確認したら、計算・文章題・見分けクイズで練習して、最後に演習問題で仕上げよう。</p>
+      </div>
+      <h2 class="small-h">おすすめの順番</h2>
+      <ol class="steps">
+        <li><a href="#formulas" class="step"><span class="step-no">1</span><span><strong>公式まとめ</strong><small>7つの公式と、どの公式を使うかの見分け方</small></span></a></li>
+        <li><a href="#calc" class="step"><span class="step-no">2</span><span><strong>計算トレーニング</strong><small>n!・<span class="nt"><sub>n</sub>P<sub>r</sub></span>・<span class="nt"><sub>n</sub>C<sub>r</sub></span> をすばやく正確に</small><span class="stat" id="stat-calc"></span></span></a></li>
+        <li><a href="#word" class="step"><span class="step-no">3</span><span><strong>文章題トレーニング</strong><small>毎回ちがう問題がランダムに出る。解説つき</small><span class="stat" id="stat-word"></span></span></a></li>
+        <li><a href="#classify" class="step"><span class="step-no">4</span><span><strong>見分けクイズ</strong><small>問題文を読んで、どの公式を使うかを当てる</small><span class="stat" id="stat-classify"></span></span></a></li>
+        <li><a href="#exam" class="step"><span class="step-no">5</span><span><strong>演習問題</strong><small>テスト形式の全10問・30小問で総仕上げ</small><span class="stat" id="stat-exam"></span></span></a></li>
+      </ol>
+    </section>
+
+    <!-- 公式まとめ -->
+    <section id="view-formulas" class="view" hidden>
+      <h2>公式まとめ</h2>
+      <p class="sub">問題を解く前に、まず「どの公式を使うか」を決めよう。</p>
+
+      <div class="flow">
+        <h3>どの公式を使う？ 見分け方</h3>
+        <ol>
+          <li><b>同じものを何回も選べる（くり返しOK）？</b><br>→ 並べるなら <em>重複順列</em> <span class="nt">n<sup>r</sup></span>、選ぶだけなら <em>重複組合せ</em> <span class="nt"><sub>n</sub>H<sub>r</sub></span></li>
+          <li><b>並べるものの中に、同じものが含まれている？</b><br>→ <em>同じものを含む順列</em></li>
+          <li><b>円形に並べる？</b><br>→ <em>円順列</em> (n−1)!（裏返せる首飾りなどは さらに ÷2）</li>
+          <li><b>順番や役割の区別がある？</b><br>→ ある：<em>順列</em> <span class="nt"><sub>n</sub>P<sub>r</sub></span>　ない（選ぶだけ）：<em>組合せ</em> <span class="nt"><sub>n</sub>C<sub>r</sub></span></li>
+        </ol>
+      </div>
+
+      <div class="fgrid">
+        <article class="fcard">
+          <h3>階乗</h3>
+          <p class="formula">n! = n × (n−1) × … × 2 × 1</p>
+          <p>1 から n までの積。<b>0! = 1</b> と約束する。</p>
+          <p class="ex">例：4! = 4 × 3 × 2 × 1 = 24</p>
+        </article>
+        <article class="fcard">
+          <h3>順列</h3>
+          <p class="formula"><span class="nt"><sub>n</sub>P<sub>r</sub></span> = n(n−1)(n−2)…(n−r+1)</p>
+          <p>異なる n 個から r 個を取り出して<b>並べる</b>。n から1ずつ減らして <b>r 個</b>かける。</p>
+          <p class="kw">キーワード：並べる・1列・役職（委員長と副委員長）・けたの整数</p>
+          <p class="ex">例：5人から3人選んで1列に並べる　<span class="nt"><sub>5</sub>P<sub>3</sub></span> = 5 × 4 × 3 = 60通り</p>
+        </article>
+        <article class="fcard">
+          <h3>組合せ</h3>
+          <p class="formula"><span class="nt"><sub>n</sub>C<sub>r</sub></span> = <span class="frac"><span><span class="nt"><sub>n</sub>P<sub>r</sub></span></span><span>r!</span></span></p>
+          <p>異なる n 個から r 個を<b>選ぶだけ</b>（順番は関係ない）。並べた後で、r! 通りの並べかえの分だけ割る。</p>
+          <p class="kw">キーワード：選ぶ・組・委員（役職なし）・三角形・試合数</p>
+          <p class="ex">例：5人から3人の委員を選ぶ　<span class="nt"><sub>5</sub>C<sub>3</sub></span> = <span class="frac"><span>5 × 4 × 3</span><span>3 × 2 × 1</span></span> = 10通り</p>
+          <p class="ex">便利な性質：<span class="nt"><sub>n</sub>C<sub>r</sub></span> = <span class="nt"><sub>n</sub>C<sub>n−r</sub></span>　（<span class="nt"><sub>10</sub>C<sub>8</sub></span> = <span class="nt"><sub>10</sub>C<sub>2</sub></span> = 45）</p>
+        </article>
+        <article class="fcard">
+          <h3>円順列</h3>
+          <p class="formula">(n − 1)!</p>
+          <p>異なる n 個を<b>円形</b>に並べる。回転して重なるものは同じなので、1つを固定して残りを並べる。</p>
+          <p class="kw">キーワード：円形のテーブル・輪になる</p>
+          <p class="ex">例：5人が円形に座る　(5−1)! = 4! = 24通り</p>
+          <p class="ex">じゅず順列（首飾り・腕輪）：<span class="frac"><span>(n − 1)!</span><span>2</span></span>　裏返して同じものも1通り</p>
+        </article>
+        <article class="fcard">
+          <h3>重複順列</h3>
+          <p class="formula"><span class="nt">n<sup>r</sup></span></p>
+          <p>n 種類から<b>同じものを何回使ってもよい</b>として r 個並べる。1つずつ n 通りずつ選べる。</p>
+          <p class="kw">キーワード：何回使ってもよい・じゃんけん・部屋に分ける・○×</p>
+          <p class="ex">例：3人がじゃんけん　3<sup>3</sup> = 27通り</p>
+        </article>
+        <article class="fcard">
+          <h3>同じものを含む順列</h3>
+          <p class="formula"><span class="frac"><span>n!</span><span>p! q! r! …</span></span></p>
+          <p>n 個の中に、同じものが p 個、q 個、r 個…あるときの並べ方。同じものどうしの入れかえ分を割る。</p>
+          <p class="kw">キーワード：文字の並べかえ・最短経路</p>
+          <p class="ex">例：a, a, b, b, b を並べる　<span class="frac"><span>5!</span><span>2! × 3!</span></span> = 10通り</p>
+        </article>
+        <article class="fcard">
+          <h3>重複組合せ <span class="tag lv">発展</span></h3>
+          <p class="formula"><span class="nt"><sub>n</sub>H<sub>r</sub></span> = <span class="nt"><sub>n+r−1</sub>C<sub>r</sub></span></p>
+          <p>n 種類から<b>同じものを何個選んでもよい</b>として r 個選ぶ。「○ r 個と仕切り｜(n−1) 本の並べ方」と考える。</p>
+          <p class="kw">キーワード：〜種類から〜個買う・x+y+z=n の整数解</p>
+          <p class="ex">例：3種類の果物から5個買う　<span class="nt"><sub>7</sub>C<sub>2</sub></span> = 21通り</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 計算トレーニング -->
+    <section id="view-calc" class="view" hidden>
+      <h2>計算トレーニング</h2>
+      <p class="sub">公式の計算をすばやく正確にできるようにしよう。</p>
+      <div class="filters">
+        <div class="chips" id="calc-types" role="group" aria-label="出題する計算">
+          <label class="chip"><input type="checkbox" value="fact" checked>n!</label>
+          <label class="chip"><input type="checkbox" value="perm" checked><span class="nt"><sub>n</sub>P<sub>r</sub></span></label>
+          <label class="chip"><input type="checkbox" value="comb" checked><span class="nt"><sub>n</sub>C<sub>r</sub></span></label>
+        </div>
+      </div>
+      <div id="calc-trainer"></div>
+    </section>
+
+    <!-- 文章題トレーニング -->
+    <section id="view-word" class="view" hidden>
+      <h2>文章題トレーニング</h2>
+      <p class="sub">問題は毎回ランダムに作られます。答えたら解説で考え方を確認しよう。</p>
+      <div class="filters">
+        <div class="chips" id="word-topics" role="group" aria-label="分野">
+          <label class="chip"><input type="checkbox" value="perm" checked>順列</label>
+          <label class="chip"><input type="checkbox" value="comb" checked>組合せ</label>
+          <label class="chip"><input type="checkbox" value="circ" checked>円順列</label>
+          <label class="chip"><input type="checkbox" value="rep" checked>重複順列</label>
+          <label class="chip"><input type="checkbox" value="same" checked>同じものを含む順列</label>
+          <label class="chip"><input type="checkbox" value="hcomb">重複組合せ（発展）</label>
+        </div>
+        <div class="chips" id="word-level" role="radiogroup" aria-label="レベル">
+          <label class="chip"><input type="radio" name="word-level" value="1" checked>基本</label>
+          <label class="chip"><input type="radio" name="word-level" value="2">標準</label>
+          <label class="chip"><input type="radio" name="word-level" value="all">ぜんぶ</label>
+        </div>
+      </div>
+      <div id="word-trainer"></div>
+    </section>
+
+    <!-- 見分けクイズ -->
+    <section id="view-classify" class="view" hidden>
+      <h2>見分けクイズ</h2>
+      <p class="sub">計算はしなくてOK。問題文を読んで、使う公式を選ぼう。</p>
+      <div id="classify-trainer"></div>
+    </section>
+
+    <!-- 演習問題 -->
+    <section id="view-exam" class="view" hidden>
+      <h2>演習問題</h2>
+      <p class="sub">テスト形式の問題です。大問ごとに「答え合わせ」を押すと、採点と解説が表示されます。</p>
+      <div class="exam-score">
+        <p id="exam-score-text">まだ答え合わせをしていません（全30問）</p>
+        <div class="bar"><div id="exam-bar"></div></div>
+        <p id="exam-final" class="exam-final" hidden></p>
+        <button type="button" id="exam-reset-all" class="btn">すべてやり直す</button>
+      </div>
+      <div id="exam-list"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
