@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>順列と組合せ道場</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Klee+One:wght@400;600&display=swap">
+<style>
+/* Layout: 方眼ノートの上に、単元カードと問題カードを1列で積む。上部に3つのタブ（学ぶ／トレーニング／演習問題） */
+:root {
+  --paper: #eef2f6;
+  --sheet: #ffffff;
+  --rule: #d5dde8;
+  --ink: #1c2840;
+  --muted: #586581;
+  --pen: #2850b8;
+  --pen-soft: #e3eafb;
+  --marker: #fff0a0;
+  --good: #1d7f55;
+  --good-soft: #e1f3ea;
+  --bad: #b83a33;
+  --bad-soft: #fbe7e5;
+  --f-display: "Klee One", "Hiragino Maru Gothic ProN", "Yu Gothic", serif;
+  --f-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111722; --sheet: #19212f; --rule: #2b3648; --ink: #e5eaf3; --muted: #9ca8bd;
+    --pen: #86a6ff; --pen-soft: #22304f; --marker: #4d4413; --good: #5fd09a; --good-soft: #163428;
+    --bad: #ff8b82; --bad-soft: #3a1d1c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111722; --sheet: #19212f; --rule: #2b3648; --ink: #e5eaf3; --muted: #9ca8bd;
+  --pen: #86a6ff; --pen-soft: #22304f; --marker: #4d4413; --good: #5fd09a; --good-soft: #163428;
+  --bad: #ff8b82; --bad-soft: #3a1d1c; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--paper);
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.75;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sheet); }
+.wrap {
+  max-width: 820px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header.top { background: var(--sheet); border-bottom: 1px solid var(--rule); }
+header.top .wrap { padding-block: 22px 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+h1 { font-family: var(--f-display); font-weight: 600; font-size: 1.9rem; margin: 0; letter-spacing: .02em; }
+h1 .sym { color: var(--pen); }
+.lead { margin: 0; color: var(--muted); font-size: .92rem; }
+nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--sheet); border-bottom: 1px solid var(--rule); }
+nav.tabs .wrap { display: flex; gap: 4px; }
+nav.tabs a {
+  flex: 1; text-align: center; padding: 12px 6px 10px; text-decoration: none; color: var(--muted);
+  font-weight: 700; border-bottom: 3px solid transparent; font-size: .98rem;
+}
+nav.tabs a[aria-current="page"] { color: var(--pen); border-bottom-color: var(--pen); }
+nav.tabs a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, .chip:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; }
+main .wrap { padding-block: 24px 64px; display: grid; gap: 20px; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 1.45rem; margin: 0; text-wrap: balance; }
+h3 { font-size: 1.08rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.eyebrow { font-size: .78rem; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.formula {
+  font-family: var(--f-display); font-size: 1.35rem; font-weight: 600; padding: 10px 14px;
+  background: var(--pen-soft); border-radius: 8px; overflow-x: auto; line-height: 2;
+}
+.sym { white-space: nowrap; font-style: normal; }
+.sym sub { font-size: .62em; vertical-align: -0.25em; }
+.frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .15em; line-height: 1.35; }
+.frac > span { padding: 0 .3em; }
+.frac > span:first-child { border-bottom: 1.5px solid currentColor; }
+mark { background: var(--marker); color: inherit; padding: 0 .2em; border-radius: 3px; }
+.ex { border-left: 3px solid var(--rule); padding-left: 12px; display: grid; gap: 4px; }
+.ex b { color: var(--pen); }
+.muted { color: var(--muted); }
+.small { font-size: .88rem; }
+button, .btn {
+  font: inherit; font-weight: 700; border-radius: 8px; padding: 9px 16px; cursor: pointer;
+  border: 1.5px solid var(--pen); background: var(--pen); color: var(--sheet);
+}
+button.ghost { background: transparent; color: var(--pen); }
+button:disabled { opacity: .45; cursor: default; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: .9rem; font-weight: 700; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1.5px solid var(--rule); background: var(--sheet); color: var(--ink); display: inline-flex; gap: 6px; align-items: center;
+}
+.chip[aria-pressed="true"] { border-color: var(--pen); background: var(--pen-soft); color: var(--pen); }
+.chip .cnt { font-weight: 400; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; font-size: .78rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--pen-soft); color: var(--pen); }
+.tag.adv { background: var(--marker); color: var(--ink); }
+.q { font-size: 1.12rem; line-height: 1.9; }
+.answer-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+input[type="text"], select {
+  font: inherit; font-size: 1.1rem; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--rule);
+  background: var(--paper); color: var(--ink); width: 9em; font-variant-numeric: tabular-nums;
+}
+select { width: auto; font-size: 1rem; }
+.unit { color: var(--muted); }
+.feedback { padding: 10px 14px; border-radius: 8px; font-weight: 700; }
+.feedback.ok { background: var(--good-soft); color: var(--good); }
+.feedback.ng { background: var(--bad-soft); color: var(--bad); }
+.feedback.hint { background: var(--marker); color: var(--ink); font-weight: 400; }
+.steps { display: grid; gap: 6px; padding: 14px; border: 1.5px dashed var(--rule); border-radius: 8px; overflow-x: auto; }
+.steps .ans { font-weight: 700; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stats b { color: var(--ink); font-size: 1.05rem; }
+.fig { overflow-x: auto; }
+svg.grid line { stroke: var(--ink); stroke-width: 1.4; }
+svg.grid text { fill: var(--ink); font-family: var(--f-display); font-size: 15px; font-weight: 600; }
+svg.grid .pt { fill: var(--pen); }
+svg.grid .pt.x { fill: var(--bad); }
+svg.grid .end { fill: var(--ink); }
+.lab-out { display: grid; gap: 4px; font-family: var(--f-display); font-size: 1.05rem; overflow-x: auto; }
+.lab-out .set { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.lab-out .set > span:first-child { color: var(--pen); min-width: 5.5em; font-weight: 600; }
+.lab-out .perms { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .92rem; }
+.toc a { color: var(--pen); }
+table.guide { border-collapse: collapse; width: 100%; font-size: .95rem; }
+table.guide th, table.guide td { border: 1px solid var(--rule); padding: 8px 10px; text-align: left; vertical-align: top; }
+table.guide th { background: var(--pen-soft); }
+.tblwrap { overflow-x: auto; }
+.exam-list { display: grid; gap: 14px; counter-reset: none; }
+.exam-item { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--sheet); min-width: 0; }
+.exam-item.ok { border-color: var(--good); }
+.exam-item.ng { border-color: var(--bad); }
+.exam-item .head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.exam-item .no { font-family: var(--f-display); font-weight: 600; font-size: 1.15rem; color: var(--pen); }
+.verdict { font-size: .82rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.verdict.ok { background: var(--good-soft); color: var(--good); }
+.verdict.ng { background: var(--bad-soft); color: var(--bad); }
+.score { font-family: var(--f-display); font-size: 2.6rem; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.score small { font-size: 1rem; color: var(--muted); }
+details summary { cursor: pointer; color: var(--pen); font-weight: 700; }
+.seg { display: inline-flex; border: 1.5px solid var(--pen); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; color: var(--pen); }
+.seg button[aria-pressed="true"] { background: var(--pen); color: var(--sheet); }
+@media (max-width: 480px) {
+  h1 { font-size: 1.55rem; }
+  .sheet { padding: 16px; }
+  .formula { font-size: 1.15rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .feedback { animation: pop .18s ease-out; }
+  @keyframes pop { from { transform: translateY(-3px); opacity: .6; } to { transform: none; opacity: 1; } }
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <h1>順列と組合せ道場 <span class="sym"><sub>n</sub>P<sub>r</sub></span> <span class="sym"><sub>n</sub>C<sub>r</sub></span></h1>
+    <p class="lead">数学A「場合の数」を、しくみの理解 → 反復トレーニング → 演習問題の順で練習します。</p>
+  </div>
+</header>
+<nav class="tabs" aria-label="コーナー">
+  <div class="wrap">
+    <a href="#learn" data-view="learn">学ぶ</a>
+    <a href="#train" data-view="train">トレーニング</a>
+    <a href="#exam" data-view="exam">演習問題</a>
+  </div>
+</nav>
+
+<main>
+  <!-- 学ぶ -->
+  <section id="view-learn" class="wrap" data-v="learn">
+    <div class="sheet">
+      <span class="eyebrow">まずはここから</span>
+      <h2>P か C か、どう見分ける？</h2>
+      <p>迷ったら「<mark>選んだあとに順番（役割）をつけるかどうか</mark>」を考えます。</p>
+      <div class="tblwrap">
+        <table class="guide">
+          <tr><th>問題文のサイン</th><th>使うもの</th><th>例</th></tr>
+          <tr><td>一列に並べる・〜桁の整数・委員長と副委員長</td><td>順列 <span class="sym"><sub>n</sub>P<sub>r</sub></span></td><td>5人から2人選んで委員長・副委員長 → <span class="sym"><sub>5</sub>P<sub>2</sub></span> = 20</td></tr>
+          <tr><td>選ぶだけ・組・グループ・図形（三角形、対角線）</td><td>組合せ <span class="sym"><sub>n</sub>C<sub>r</sub></span></td><td>5人から2人の委員を選ぶ → <span class="sym"><sub>5</sub>C<sub>2</sub></span> = 10</td></tr>
+          <tr><td>円形に並べる</td><td>円順列 (n−1)!</td><td>4人で円卓 → 3! = 6</td></tr>
+          <tr><td>同じものを何回使ってもよい</td><td>重複順列 n<sup>r</sup></td><td>○×式3問 → 2<sup>3</sup> = 8</td></tr>
+          <tr><td>同じ文字・同じ色の玉を並べる</td><td>同じものを含む順列</td><td>AABの並べ方 → 3!÷2! = 3</td></tr>
+        </table>
+      </div>
+      <nav class="toc" aria-label="単元">
+        <a href="#u-rule">和・積の法則</a><a href="#u-perm">順列</a><a href="#u-circle">円順列</a><a href="#u-repeat">重複順列</a><a href="#u-comb">組合せ</a><a href="#u-same">同じものを含む順列・最短経路</a><a href="#u-group">組分け</a><a href="#u-hcomb">重複組合せ</a><a href="#u-lab">書き出しラボ</a>
+      </nav>
+    </div>
+
+    <article class="sheet" id="u-rule">
+      <span class="eyebrow">単元 1</span>
+      <h2>和の法則・積の法則</h2>
+      <p><b>和の法則</b>：AとBが同時には起こらないとき、「AまたはB」の起こり方は <mark>a + b 通り</mark>。</p>
+      <p><b>積の法則</b>：Aの起こり方が a 通りで、そのそれぞれに対してBが b 通りあるとき、「AとB」の起こり方は <mark>a × b 通り</mark>。</p>
+      <div class="ex"><span><b>例</b> 大小2個のサイコロで、目の和が5の倍数になる（和が5か10）。</span>
+        <span>和が5：(1,4)(2,3)(3,2)(4,1) の4通り、和が10：(4,6)(5,5)(6,4) の3通り → 4 + 3 = <b>7通り</b></span></div>
+      <div class="ex"><span><b>例</b> シャツ3枚、ズボン4本の組み合わせ方 → 3 × 4 = <b>12通り</b></span></div>
+      <p class="muted small">すべての場合の数は、この2つの法則の組み合わせでできています。迷ったら樹形図をかいて確かめましょう。</p>
+    </article>
+
+    <article class="sheet" id="u-perm">
+      <span class="eyebrow">単元 2</span>
+      <h2>順列 <span class="sym"><sub>n</sub>P<sub>r</sub></span> と階乗 n!</h2>
+      <div class="formula"><span class="sym"><sub>n</sub>P<sub>r</sub></span> = n(n−1)(n−2)…(n−r+1)　<span class="muted small">← nから始めて r 個かける</span><br>n! = n(n−1)…2・1 = <span class="sym"><sub>n</sub>P<sub>n</sub></span>　　0! = 1</div>
+      <p>異なる n 個から r 個を取り出して<mark>一列に並べる</mark>並べ方です。1番目は n 通り、2番目は残りの (n−1) 通り…と積の法則で考えます。</p>
+      <div class="ex"><span><b>例</b> 1〜6の数字から異なる3個で3桁の整数 → <span class="sym"><sub>6</sub>P<sub>3</sub></span> = 6×5×4 = <b>120個</b></span></div>
+      <div class="ex"><span><b>よく出る型</b></span>
+        <span>・<b>隣り合う</b>：隣り合うものをまとめて1つと考え、あとで中の並び方をかける。</span>
+        <span>・<b>隣り合わない</b>：先に他のものを並べ、その間と両端に入れる。</span>
+        <span>・<b>0を含む整数</b>：最高位に0は置けない。最高位から決める。</span></div>
+      <div class="row"><button class="ghost" data-go="perm">順列をトレーニング</button><button class="ghost" data-go="calc">計算をトレーニング</button></div>
+    </article>
+
+    <article class="sheet" id="u-circle">
+      <span class="eyebrow">単元 3</span>
+      <h2>円順列・じゅず順列</h2>
+      <div class="formula">円順列 = (n−1)!　　じゅず順列 = <span class="frac"><span>(n−1)!</span><span>2</span></span></div>
+      <p>円形に並べると、回転して重なるものは同じ並び方です。<mark>1人を固定して</mark>残りの (n−1) 人を並べると考えます。じゅず（首飾り）は裏返しても同じなので、さらに2で割ります。</p>
+      <div class="ex"><span><b>例</b> 5人が円卓に座る → (5−1)! = 4! = <b>24通り</b></span>
+        <span><b>例</b> 異なる5個の玉で首飾り → 4! ÷ 2 = <b>12通り</b></span></div>
+      <div class="row"><button class="ghost" data-go="circle">円順列をトレーニング</button></div>
+    </article>
+
+    <article class="sheet" id="u-repeat">
+      <span class="eyebrow">単元 4</span>
+      <h2>重複順列 n<sup>r</sup></h2>
+      <div class="formula">異なる n 種類から、重複を許して r 個並べる → n<sup>r</sup> 通り</div>
+      <p>毎回 n 通りの選び方があるので、n を r 回かけます。「<mark>人をどの部屋に入れるか</mark>」のように、1人ずつ行き先を選ぶ問題もこの形です。</p>
+      <div class="ex"><span><b>例</b> 5人をA, Bの2部屋に入れる（空き部屋があってもよい） → 2<sup>5</sup> = <b>32通り</b></span>
+        <span>どちらの部屋にも1人以上 → 全員Aと全員Bの2通りを引いて 32 − 2 = <b>30通り</b></span></div>
+      <div class="row"><button class="ghost" data-go="repeat">重複順列をトレーニング</button></div>
+    </article>
+
+    <article class="sheet" id="u-comb">
+      <span class="eyebrow">単元 5</span>
+      <h2>組合せ <span class="sym"><sub>n</sub>C<sub>r</sub></span></h2>
+      <div class="formula"><span class="sym"><sub>n</sub>C<sub>r</sub></span> = <span class="frac"><span><span class="sym"><sub>n</sub>P<sub>r</sub></span></span><span>r!</span></span> = <span class="frac"><span>n(n−1)…(n−r+1)</span><span>r(r−1)…1</span></span>　　<span class="sym"><sub>n</sub>C<sub>r</sub></span> = <span class="sym"><sub>n</sub>C<sub>n−r</sub></span></div>
+      <p>異なる n 個から r 個を<mark>選ぶだけ</mark>（順番を区別しない）の数です。順列 <span class="sym"><sub>n</sub>P<sub>r</sub></span> では、同じ r 個の組が r! 回ずつ数えられているので r! で割ります。下の「書き出しラボ」で確かめられます。</p>
+      <div class="ex"><span><b>例</b> 10人から8人を選ぶ → <span class="sym"><sub>10</sub>C<sub>8</sub></span> = <span class="sym"><sub>10</sub>C<sub>2</sub></span> = 10×9÷2 = <b>45通り</b></span>
+        <span><b>例</b> 「少なくとも1人」→ 全体から「1人もいない」を引く（余事象）。</span>
+        <span><b>例</b> 正六角形の対角線 → 2頂点の選び方 <span class="sym"><sub>6</sub>C<sub>2</sub></span> = 15 から辺の6本を引いて <b>9本</b></span></div>
+      <div class="row"><button class="ghost" data-go="comb">組合せをトレーニング</button></div>
+    </article>
+
+    <article class="sheet" id="u-same">
+      <span class="eyebrow">単元 6</span>
+      <h2>同じものを含む順列・最短経路</h2>
+      <div class="formula">a が p 個、b が q 個、c が r 個 → <span class="frac"><span>(p+q+r)!</span><span>p! q! r!</span></span> 通り</div>
+      <p>同じもの同士を入れかえても並びは変わらないので、その入れかえの数で割ります。2種類なら、「どの場所に a を置くか」を選ぶと考えて <span class="sym"><sub>p+q</sub>C<sub>p</sub></span> でも求められます。</p>
+      <p><b>最短経路</b>：右に a 回、上に b 回進む道順は、「→ a 個と ↑ b 個の並べ方」なので <mark><span class="sym"><sub>a+b</sub>C<sub>a</sub></span> 通り</mark>。点Pを通る道は「A→P の道順 × P→B の道順」。</p>
+      <div class="fig" id="learnGrid"></div>
+      <div class="ex"><span><b>例</b> 上の図で A から B への最短経路 → →4個、↑3個の並べ方 <span class="sym"><sub>7</sub>C<sub>3</sub></span> = <b>35通り</b></span>
+        <span>P を通るもの → A→P は <span class="sym"><sub>3</sub>C<sub>1</sub></span> = 3、P→B は <span class="sym"><sub>4</sub>C<sub>2</sub></span> = 6 なので 3 × 6 = <b>18通り</b></span></div>
+      <div class="row"><button class="ghost" data-go="same">同じものを含む順列をトレーニング</button><button class="ghost" data-go="path">最短経路をトレーニング</button></div>
+    </article>
+
+    <article class="sheet" id="u-group">
+      <span class="eyebrow">単元 7</span>
+      <h2>組分け</h2>
+      <p>人を組に分けるときは、<mark>組に名前（A組、B組など）があるかどうか</mark>が分かれ目です。</p>
+      <div class="ex"><span><b>例</b> 6人を2人ずつ A, B, C の3部屋に分ける → <span class="sym"><sub>6</sub>C<sub>2</sub></span> × <span class="sym"><sub>4</sub>C<sub>2</sub></span> × <span class="sym"><sub>2</sub>C<sub>2</sub></span> = 15 × 6 × 1 = <b>90通り</b></span>
+        <span>部屋の区別がない3組に分ける → 同じ人数の組の入れかえ 3! 通りが同じになるので 90 ÷ 3! = <b>15通り</b></span>
+        <span>6人を1人・2人・3人の3組に分ける → 人数が違うので組を区別できる。<span class="sym"><sub>6</sub>C<sub>1</sub></span> × <span class="sym"><sub>5</sub>C<sub>2</sub></span> = <b>60通り</b>（割らない）</span></div>
+      <div class="row"><button class="ghost" data-go="group">組分けをトレーニング</button></div>
+    </article>
+
+    <article class="sheet" id="u-hcomb">
+      <span class="eyebrow">単元 8　<span class="tag adv">発展</span></span>
+      <h2>重複組合せ（○と｜の並べ方）</h2>
+      <p>「同じりんご 5 個を A, B, C の 3 人に分ける（0 個の人がいてもよい）」は、<mark>○ 5 個としきり ｜ 2 本の並べ方</mark>と同じです。</p>
+      <div class="formula">○○｜○｜○○　→　A 2 個、B 1 個、C 2 個<br><span class="sym"><sub>7</sub>C<sub>2</sub></span> = 21 通り</div>
+      <p>x + y + z = n（0以上の整数）の解の個数も同じで <span class="sym"><sub>n+2</sub>C<sub>2</sub></span>。1以上の整数にしたいときは、先に1個ずつ配ってから考えます。</p>
+      <div class="row"><button class="ghost" data-go="hcomb">重複組合せをトレーニング</button></div>
+    </article>
+
+    <article class="sheet" id="u-lab">
+      <span class="eyebrow">さわって確かめる</span>
+      <h2>書き出しラボ</h2>
+      <p>A, B, C, … から r 個を取り出す並べ方をすべて書き出します。<mark>同じ組（左の青字）ごとに r! 個ずつ</mark>並びがあるので、<span class="sym"><sub>n</sub>P<sub>r</sub></span> = <span class="sym"><sub>n</sub>C<sub>r</sub></span> × r! になることを確かめましょう。</p>
+      <div class="row">
+        <label for="labN">文字の数 n</label>
+        <select id="labN"><option>3</option><option selected>4</option><option>5</option></select>
+        <label for="labR">取り出す数 r</label>
+        <select id="labR"><option>1</option><option selected>2</option><option>3</option></select>
+      </div>
+      <div id="labSum" class="formula"></div>
+      <div id="labOut" class="lab-out"></div>
+    </article>
+  </section>
+
+  <!-- トレーニング -->
+  <section id="view-train" class="wrap" data-v="train" hidden>
+    <div class="sheet">
+      <span class="eyebrow">単元をえらぶ</span>
+      <div class="chips" id="topicChips"></div>
+      <div class="stats" id="trainStats"></div>
+    </div>
+    <div class="sheet" id="probCard">
+      <div class="row"><span class="tag" id="probTag"></span><span class="muted small" id="probNo"></span></div>
+      <div class="q" id="probQ"></div>
+      <div class="fig" id="probFig"></div>
+      <form class="answer-row" id="ansForm" autocomplete="off">
+        <label for="ansInput" class="muted">答え</label>
+        <input type="text" id="ansInput" inputmode="numeric" placeholder="数字">
+        <span class="unit" id="probUnit">通り</span>
+        <button type="submit" id="checkBtn">答え合わせ</button>
+        <button type="button" class="ghost" id="hintBtn">ヒント</button>
+      </form>
+      <div id="probFeedback"></div>
+      <div id="probSteps" hidden></div>
+      <div class="row">
+        <button type="button" class="ghost" id="showBtn">解説を見る</button>
+        <button type="button" id="nextBtn">次の問題 →</button>
+      </div>
+    </div>
+    <p class="muted small">問題は数字を変えて毎回新しく作られます。最初の解答だけが成績に記録されます（このブラウザにだけ保存）。</p>
+  </section>
+
+  <!-- 演習問題 -->
+  <section id="view-exam" class="wrap" data-v="exam" hidden>
+    <div class="sheet">
+      <span class="eyebrow">仕上げ</span>
+      <h2>演習問題コーナー</h2>
+      <p>テスト形式で全問に答えてから「採点する」を押します。まちがえた問題は解説を読んで、トレーニングで同じ単元を練習しましょう。</p>
+      <div class="row">
+        <div class="seg" role="group" aria-label="セット">
+          <button type="button" data-set="basic" aria-pressed="true">基本演習 10問</button>
+          <button type="button" data-set="adv" aria-pressed="false">応用演習 10問</button>
+        </div>
+        <span class="muted small" id="bestScore"></span>
+      </div>
+    </div>
+    <div id="examResult" class="sheet" hidden></div>
+    <form id="examForm" class="exam-list" autocomplete="off"></form>
+    <div class="row">
+      <button type="button" id="gradeBtn">採点する</button>
+      <button type="button" class="ghost" id="resetBtn">解答を消してやり直す</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  // ---------- 計算の道具 ----------
+  const fact = n => { let x = 1; for (let i = 2; i <= n; i++) x *= i; return x; };
+  const P = (n, r) => { let x = 1; for (let i = 0; i < r; i++) x *= (n - i); return x; };
+  const C = (n, r) => (r < 0 || r > n) ? 0 : Math.round(P(n, r) / fact(r));
+  const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const fmt = n => n.toLocaleString('ja-JP');
+  const nP = (n, r) => `<span class="sym"><sub>${n}</sub>P<sub>${r}</sub></span>`;
+  const nC = (n, r) => `<span class="sym"><sub>${n}</sub>C<sub>${r}</sub></span>`;
+  const seq = (n, r) => Array.from({ length: r }, (_, i) => n - i).join('×');
+  const frac = (a, b) => `<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+  const pExp = (n, r) => r === 1 ? `${nP(n, 1)} = ${n}` : `${nP(n, r)} = ${seq(n, r)} = ${fmt(P(n, r))}`;
+  const fExp = n => n <= 1 ? `${n}! = 1` : `${n}! = ${seq(n, n)} = ${fmt(fact(n))}`;
+  const cExp = (n, r) => {
+    if (r > n - r) return `${nC(n, r)} = ${cExp(n, n - r)}`;
+    if (r === 0) return `${nC(n, 0)} = 1`;
+    if (r === 1) return `${nC(n, 1)} = ${n}`;
+    return `${nC(n, r)} = ${frac(seq(n, r), seq(r, r))} = ${fmt(C(n, r))}`;
+  };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('junretsu:' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('junretsu:' + k, JSON.stringify(v)); } catch (e) { /* 保存できない環境では無視 */ } }
+  };
+
+  // ---------- 最短経路の図 ----------
+  function gridSVG(a, b, p, mark = 'P', isX = false) {
+    const s = 34, m = 26, W = a * s + m * 2, H = b * s + m * 2;
+    const pt = (x, y) => [m + x * s, m + (b - y) * s];
+    let g = '';
+    for (let i = 0; i <= a; i++) g += `<line x1="${m + i * s}" y1="${m}" x2="${m + i * s}" y2="${m + b * s}"/>`;
+    for (let j = 0; j <= b; j++) g += `<line x1="${m}" y1="${m + j * s}" x2="${m + a * s}" y2="${m + j * s}"/>`;
+    const [ax, ay] = pt(0, 0), [bx, by] = pt(a, b);
+    g += `<circle class="end" cx="${ax}" cy="${ay}" r="4"/><circle class="end" cx="${bx}" cy="${by}" r="4"/>`;
+    g += `<text x="${ax - 20}" y="${ay + 18}">A</text><text x="${bx + 6}" y="${by - 8}">B</text>`;
+    if (p) {
+      const [px, py] = pt(p[0], p[1]);
+      g += `<circle class="pt${isX ? ' x' : ''}" cx="${px}" cy="${py}" r="6"/><text x="${px + 7}" y="${py - 8}">${mark}</text>`;
+    }
+    return `<svg class="grid" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="横${a}区画、縦${b}区画の碁盤目の道">${g}</svg>`;
+  }
+
+  // ---------- 問題の自動生成 ----------
+  // 各関数は { q, ans, hint, steps:[...], fig? , unit? } を返す
+  const TOPICS = [
+    { id: 'calc', name: '計算 P・C・!', gens: [
+      () => { const n = ri(4, 9), r = ri(2, Math.min(4, n)); return { q: `${nP(n, r)} を計算しなさい。`, ans: P(n, r), unit: '',
+        hint: `${nP(n, r)} は ${n} から 1 ずつ小さくしながら ${r} 個かけます。`, steps: [pExp(n, r)] }; },
+      () => { const n = ri(5, 10), r = ri(2, Math.min(4, n - 2)); return { q: `${nC(n, r)} を計算しなさい。`, ans: C(n, r), unit: '',
+        hint: `${nC(n, r)} = ${nP(n, r)} ÷ ${r}! です。分子は ${n} から ${r} 個、分母は ${r} から ${r} 個かけます。`, steps: [cExp(n, r)] }; },
+      () => { const n = ri(8, 12), r = n - ri(1, 2); return { q: `${nC(n, r)} を計算しなさい。`, ans: C(n, r), unit: '',
+        hint: `${nC(n, r)} = ${nC(n, n - r)} を使うと計算が楽になります。`, steps: [`${nC(n, r)} = ${nC(n, n - r)}（n 個から r 個選ぶ ＝ 残す ${n - r} 個を選ぶ）`, cExp(n, n - r)] }; },
+      () => { const n = ri(3, 7); return { q: `${n}! を計算しなさい。`, ans: fact(n), unit: '',
+        hint: `${n}! は ${n} から 1 までのすべての整数の積です。`, steps: [fExp(n)] }; },
+      () => { const n = ri(5, 8), r = ri(2, 3); return { q: `${nP(n, r)} − ${nC(n, r)} を計算しなさい。`, ans: P(n, r) - C(n, r), unit: '',
+        hint: `それぞれ計算してから引きます。`, steps: [pExp(n, r), cExp(n, r), `${fmt(P(n, r))} − ${fmt(C(n, r))} = ${fmt(P(n, r) - C(n, r))}`] }; },
+    ]},
+    { id: 'perm', name: '順列', gens: [
+      () => { const n = ri(5, 8), r = ri(2, 4); return { q: `${n} 人の中から ${r} 人を選んで一列に並べる。並べ方は何通りあるか。`, ans: P(n, r),
+        hint: `異なる ${n} 個から ${r} 個取り出して並べる順列です。`, steps: [`1番目 ${n} 通り、2番目 ${n - 1} 通り…と積の法則で考えます。`, pExp(n, r)] }; },
+      () => { const n = ri(6, 10); return { q: `${n} 人の中から、委員長・副委員長・書記を 1 人ずつ選ぶ。選び方は何通りあるか。`, ans: P(n, 3),
+        hint: `役職が違うので、選んだ 3 人の「順番」を区別します。`, steps: [`役職に順番がある → 順列`, pExp(n, 3)] }; },
+      () => { const m = ri(4, 7); const d = Array.from({ length: m + 1 }, (_, i) => i).join(', ');
+        return { q: `${m + 1} 個の数字 ${d} から異なる 3 個を使って 3 桁の整数をつくる。整数は何個できるか。`, ans: m * P(m, 2), unit: '個',
+        hint: `百の位には 0 を置けません。百の位から決めましょう。`, steps: [`百の位：0 以外の ${m} 通り`, `十の位・一の位：残り ${m} 個（0 を含む）から 2 個並べる ${pExp(m, 2)}`, `${m} × ${P(m, 2)} = <span class="ans">${fmt(m * P(m, 2))} 個</span>`] }; },
+      () => { const a = ri(2, 4), b = ri(2, 3); const ans = fact(a + 1) * fact(b);
+        return { q: `男子 ${a} 人、女子 ${b} 人が一列に並ぶとき、女子 ${b} 人が続いて並ぶ並び方は何通りあるか。`, ans,
+        hint: `女子 ${b} 人をひとまとめにして 1 人と考えます。まとめた中の並び方も忘れずに。`, steps: [`女子をまとめて 1 人と考えると、男子 ${a} 人 + 1 組 = ${a + 1} 個の並べ方：${fExp(a + 1)}`, `まとめた女子の中の並び方：${fExp(b)}`, `${fmt(fact(a + 1))} × ${fact(b)} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const a = ri(3, 4), b = ri(2, 3); const ans = P(a, 2) * fact(a + b - 2);
+        return { q: `男子 ${a} 人、女子 ${b} 人が一列に並ぶとき、両端が男子になる並び方は何通りあるか。`, ans,
+        hint: `先に両端の男子を決めてから、残りの人を間に並べます。`, steps: [`両端の男子の並べ方：${pExp(a, 2)}`, `残り ${a + b - 2} 人を間に並べる：${fExp(a + b - 2)}`, `${P(a, 2)} × ${fmt(fact(a + b - 2))} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const a = ri(3, 4), b = ri(2, 3); const ans = fact(a) * P(a + 1, b);
+        return { q: `男子 ${a} 人、女子 ${b} 人が一列に並ぶとき、女子どうしが隣り合わない並び方は何通りあるか。`, ans,
+        hint: `先に男子を並べ、男子の間と両端（${a + 1} か所）に女子を 1 人ずつ入れます。`, steps: [`男子の並べ方：${fExp(a)}`, `男子の間と両端の ${a + 1} か所から ${b} か所選んで女子を並べる：${pExp(a + 1, b)}`, `${fact(a)} × ${P(a + 1, b)} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const n = ri(5, 9), e = Math.floor(n / 2); const ans = e * P(n - 1, 2);
+        return { q: `1 から ${n} までの ${n} 個の数字から異なる 3 個を使って 3 桁の整数をつくる。そのうち偶数は何個あるか。`, ans, unit: '個',
+        hint: `偶数かどうかは一の位で決まります。一の位から決めましょう。`, steps: [`一の位は偶数（${Array.from({ length: e }, (_, i) => 2 * (i + 1)).join(', ')}）の ${e} 通り`, `百の位・十の位：残り ${n - 1} 個から 2 個並べる ${pExp(n - 1, 2)}`, `${e} × ${P(n - 1, 2)} = <span class="ans">${fmt(ans)} 個</span>`] }; },
+    ]},
+    { id: 'circle', name: '円順列', gens: [
+      () => { const n = ri(4, 8); return { q: `${n} 人が円形のテーブルのまわりに座る。座り方は何通りあるか。`, ans: fact(n - 1),
+        hint: `円順列は、1 人を固定して残りを並べます。(n−1)! です。`, steps: [`1 人を固定して、残り ${n - 1} 人を並べる`, `(${n}−1)! = ${fExp(n - 1)}`] }; },
+      () => { const n = ri(5, 8); const ans = fact(n - 2) * 2;
+        return { q: `${n} 人が円形に並ぶとき、特定の 2 人 A, B が隣り合う並び方は何通りあるか。`, ans,
+        hint: `A と B をまとめて 1 人と考え、${n - 1} 人の円順列にします。A, B の入れかえも考えます。`, steps: [`A, B をまとめて 1 人と考えると ${n - 1} 人の円順列：(${n - 1}−1)! = ${fExp(n - 2)}`, `A と B の並び方：2! = 2`, `${fmt(fact(n - 2))} × 2 = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const n = ri(4, 8); const ans = fact(n - 1) / 2;
+        return { q: `色の異なる ${n} 個の玉にひもを通して首飾り（輪）をつくる。何通りの首飾りができるか。`, ans,
+        hint: `首飾りは裏返すと同じになるので、円順列を 2 で割ります（じゅず順列）。`, steps: [`円順列：(${n}−1)! = ${fmt(fact(n - 1))}`, `裏返して同じものが 2 つずつあるので ÷ 2`, `${fmt(fact(n - 1))} ÷ 2 = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const k = ri(3, 4); const ans = fact(k - 1) * fact(k);
+        return { q: `男子 ${k} 人、女子 ${k} 人が円形に並ぶとき、男女が交互に並ぶ並び方は何通りあるか。`, ans,
+        hint: `先に男子 ${k} 人を円形に並べ、その間に女子を並べます。`, steps: [`男子の円順列：(${k}−1)! = ${fact(k - 1)}`, `男子の間の ${k} か所に女子を並べる：${fExp(k)}`, `${fact(k - 1)} × ${fact(k)} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const n = pick([6, 8]); const ans = fact(n - 2);
+        return { q: `${n} 人が円形のテーブルに等間隔で座る。特定の 2 人 A, B が向かい合う座り方は何通りあるか。`, ans,
+        hint: `A の席を固定すると、B の席は向かい側に決まります。`, steps: [`A を固定すると B の席は 1 つに決まる`, `残り ${n - 2} 人を残りの席に並べる：${fExp(n - 2)}`, `<span class="ans">${fmt(ans)} 通り</span>`] }; },
+    ]},
+    { id: 'repeat', name: '重複順列', gens: [
+      () => { const k = ri(2, 4), n = ri(3, 5); const L = ['a', 'b', 'c', 'd'].slice(0, k).join(', ');
+        return { q: `${k} 種類の文字 ${L} を、重複を許して ${n} 個並べる。並べ方は何通りあるか。`, ans: k ** n,
+        hint: `どの場所にも ${k} 通りの文字を置けます。`, steps: [`${n} か所それぞれ ${k} 通り`, `${k}<sup>${n}</sup> = <span class="ans">${fmt(k ** n)} 通り</span>`] }; },
+      () => { const n = ri(5, 10); return { q: `○×式の問題が ${n} 問ある。○×のつけ方は全部で何通りあるか。`, ans: 2 ** n,
+        hint: `1 問ごとに ○ か × の 2 通りです。`, steps: [`2<sup>${n}</sup> = <span class="ans">${fmt(2 ** n)} 通り</span>`] }; },
+      () => { const n = ri(3, 6), k = ri(2, 4); return { q: `異なる ${n} 個の玉を、A ${k >= 3 ? 'から ' + 'ABCD'[k - 1] : ', B'} の ${k} つの箱に入れる。空の箱があってもよいとき、入れ方は何通りあるか。`, ans: k ** n,
+        hint: `玉 1 個ずつ、どの箱に入れるかを ${k} 通りから選びます。`, steps: [`玉 1 個につき ${k} 通り、玉は ${n} 個`, `${k}<sup>${n}</sup> = <span class="ans">${fmt(k ** n)} 通り</span>`] }; },
+      () => { const n = ri(4, 7); const ans = 2 ** n - 2;
+        return { q: `${n} 人を A, B の 2 つの部屋に入れる。どちらの部屋にも少なくとも 1 人は入るとき、入れ方は何通りあるか。`, ans,
+        hint: `まず空き部屋ありで 2<sup>${n}</sup> 通り。そこから「全員が同じ部屋」の場合を引きます。`, steps: [`空き部屋を許すと 2<sup>${n}</sup> = ${2 ** n} 通り`, `全員 A、全員 B の 2 通りを除く`, `${2 ** n} − 2 = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const m = ri(3, 5); const d = Array.from({ length: m + 1 }, (_, i) => i).join(', '); const ans = m * (m + 1) ** 2;
+        return { q: `${m + 1} 個の数字 ${d} を、同じ数字を何回使ってもよいとして 3 桁の整数をつくる。整数は何個できるか。`, ans, unit: '個',
+        hint: `百の位だけは 0 が使えません。`, steps: [`百の位：0 以外の ${m} 通り`, `十の位・一の位：それぞれ ${m + 1} 通り`, `${m} × ${m + 1} × ${m + 1} = <span class="ans">${fmt(ans)} 個</span>`] }; },
+    ]},
+    { id: 'comb', name: '組合せ', gens: [
+      () => { const n = ri(6, 12), r = ri(2, 4); return { q: `${n} 人の中から ${r} 人の委員を選ぶ。選び方は何通りあるか。`, ans: C(n, r),
+        hint: `選ぶだけで役職はないので、順番を区別しません。`, steps: [`順番を区別しない → 組合せ`, cExp(n, r)] }; },
+      () => { const a = ri(4, 7), b = ri(3, 6), x = ri(1, 3), y = ri(1, 2); const ans = C(a, x) * C(b, y);
+        return { q: `男子 ${a} 人、女子 ${b} 人の中から、男子 ${x} 人と女子 ${y} 人を選ぶ。選び方は何通りあるか。`, ans,
+        hint: `男子の選び方と女子の選び方をそれぞれ求めて、かけ合わせます（積の法則）。`, steps: [`男子：${cExp(a, x)}`, `女子：${cExp(b, y)}`, `${C(a, x)} × ${C(b, y)} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const a = ri(4, 6), b = ri(3, 5), r = ri(3, 4); const ans = C(a + b, r) - C(a, r);
+        return { q: `男子 ${a} 人、女子 ${b} 人の中から ${r} 人を選ぶとき、女子が少なくとも 1 人含まれる選び方は何通りあるか。`, ans,
+        hint: `「少なくとも 1 人」は、全体から「女子が 1 人もいない（全員男子）」を引きます。`, steps: [`全体：${cExp(a + b, r)}`, `全員男子：${cExp(a, r)}`, `${C(a + b, r)} − ${C(a, r)} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const n = ri(5, 12); const ans = C(n, 2) - n;
+        return { q: `正 ${n} 角形の対角線は何本あるか。`, ans, unit: '本',
+        hint: `2 つの頂点を結ぶ線分の数から、辺の数を引きます。`, steps: [`2 頂点を結ぶ線分：${cExp(n, 2)}`, `そのうち ${n} 本は辺`, `${C(n, 2)} − ${n} = <span class="ans">${ans} 本</span>`] }; },
+      () => { const n = ri(5, 10); return { q: `円周上に異なる ${n} 個の点がある。これらのうち 3 点を頂点とする三角形は何個できるか。`, ans: C(n, 3), unit: '個',
+        hint: `どの 3 点も一直線上にないので、3 点を選べば三角形が 1 つ決まります。`, steps: [cExp(n, 3)] }; },
+      () => { const n = ri(6, 10), r = ri(3, 4); return { q: `A を含む ${n} 人の中から ${r} 人を選ぶとき、A が必ず選ばれる選び方は何通りあるか。`, ans: C(n - 1, r - 1),
+        hint: `A は先に選んでおき、残りの ${n - 1} 人から ${r - 1} 人を選びます。`, steps: [`A を除く ${n - 1} 人から ${r - 1} 人を選ぶ`, cExp(n - 1, r - 1)] }; },
+      () => { const m = ri(3, 6), k = ri(3, 6); const ans = C(m, 2) * C(k, 2);
+        return { q: `横に平行な ${m} 本の直線と、それらに交わる縦に平行な ${k} 本の直線がある。これらの直線で囲まれる平行四辺形は何個あるか。`, ans, unit: '個',
+        hint: `横から 2 本、縦から 2 本を選ぶと平行四辺形が 1 つ決まります。`, steps: [`横の 2 本：${cExp(m, 2)}`, `縦の 2 本：${cExp(k, 2)}`, `${C(m, 2)} × ${C(k, 2)} = <span class="ans">${ans} 個</span>`] }; },
+    ]},
+    { id: 'same', name: '同じものを含む順列', gens: [
+      () => { const w = pick(['BANANA', 'APPLE', 'LEVEL', 'COFFEE', 'TOMATO', 'SCHOOL', 'SUCCESS', 'CANADA', 'KANAGAWA']);
+        const cnt = {}; for (const ch of w) cnt[ch] = (cnt[ch] || 0) + 1;
+        const reps = Object.entries(cnt).filter(([, v]) => v > 1);
+        const den = reps.reduce((s, [, v]) => s * fact(v), 1); const ans = fact(w.length) / den;
+        return { q: `${w} の ${w.length} 文字をすべて並べる。並べ方は何通りあるか。`, ans,
+        hint: `同じ文字が ${reps.map(([c, v]) => `${c} が ${v} 個`).join('、')} あります。`, steps: [`文字の内訳：${Object.entries(cnt).map(([c, v]) => `${c}×${v}`).join('　')}`, `${frac(w.length + '!', reps.map(([, v]) => v + '!').join(' '))} = ${frac(fmt(fact(w.length)), den)} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const p = ri(2, 5), q = ri(2, 4); const ans = C(p + q, p);
+        return { q: `白玉 ${p} 個、赤玉 ${q} 個を一列に並べる。並べ方は何通りあるか（同じ色の玉は区別しない）。`, ans,
+        hint: `${p + q} か所のうち、白玉を置く ${p} か所を選ぶと考えることもできます。`, steps: [`${frac(`${p + q}!`, `${p}! ${q}!`)} = ${fmt(ans)}`, `（または ${cExp(p + q, p)}）`] }; },
+      () => { const p = ri(1, 3), q = ri(2, 3), s = ri(2, 3); const ans = fact(p + q + s) / (fact(p) * fact(q) * fact(s));
+        return { q: `白玉 ${p} 個、赤玉 ${q} 個、青玉 ${s} 個を一列に並べる。並べ方は何通りあるか（同じ色の玉は区別しない）。`, ans,
+        hint: `全部で ${p + q + s} 個。同じ色どうしの入れかえで割ります。`, steps: [`${frac(`${p + q + s}!`, `${p}! ${q}! ${s}!`)} = ${frac(fmt(fact(p + q + s)), fact(p) * fact(q) * fact(s))} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const ones = ri(2, 3), twos = ri(1, 2), threes = ri(1, 2), n = ones + twos + threes;
+        const ans = fact(n) / (fact(ones) * fact(twos) * fact(threes)); const cards = [...Array(ones).fill(1), ...Array(twos).fill(2), ...Array(threes).fill(3)].join(', ');
+        return { q: `${n} 枚のカード ${cards} をすべて並べて ${n} 桁の整数をつくる。整数は何個できるか。`, ans, unit: '個',
+        hint: `1 が ${ones} 枚、2 が ${twos} 枚、3 が ${threes} 枚の、同じものを含む順列です。`, steps: [`${frac(`${n}!`, `${ones}! ${twos}! ${threes}!`)} = ${frac(fmt(fact(n)), fact(ones) * fact(twos) * fact(threes))} = <span class="ans">${fmt(ans)} 個</span>`] }; },
+    ]},
+    { id: 'path', name: '最短経路', gens: [
+      () => { const a = ri(3, 6), b = ri(2, 4); const ans = C(a + b, a);
+        return { q: `図のような碁盤目状の道がある。A から B まで遠回りしないで行く道順は何通りあるか。`, fig: gridSVG(a, b), ans,
+        hint: `右へ ${a} 区画、上へ ${b} 区画。→ ${a} 個と ↑ ${b} 個の並べ方です。`, steps: [`→ を ${a} 個、↑ を ${b} 個並べる`, `${frac(`${a + b}!`, `${a}! ${b}!`)} = ${cExp(a + b, b)}`] }; },
+      () => { const a = ri(4, 6), b = ri(3, 4), px = ri(1, a - 1), py = ri(1, b - 1);
+        const s1 = C(px + py, px), s2 = C(a - px + b - py, a - px), ans = s1 * s2;
+        return { q: `図のような碁盤目状の道がある。A から P を通って B まで遠回りしないで行く道順は何通りあるか。`, fig: gridSVG(a, b, [px, py]), ans,
+        hint: `A → P と P → B に分けて、それぞれの道順をかけます。`, steps: [`A → P：→ ${px} 個、↑ ${py} 個 → ${cExp(px + py, px)}`, `P → B：→ ${a - px} 個、↑ ${b - py} 個 → ${cExp(a - px + b - py, a - px)}`, `${s1} × ${s2} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const a = ri(4, 6), b = ri(3, 4), px = ri(1, a - 1), py = ri(1, b - 1);
+        const all = C(a + b, a), via = C(px + py, px) * C(a - px + b - py, a - px), ans = all - via;
+        return { q: `図のような碁盤目状の道がある。赤い点 X は工事中で通れない。A から B まで遠回りしないで行く道順は何通りあるか。`, fig: gridSVG(a, b, [px, py], 'X', true), ans,
+        hint: `全体の道順から、X を通る道順を引きます。`, steps: [`全体：${cExp(a + b, a)}`, `X を通る：${C(px + py, px)} × ${C(a - px + b - py, a - px)} = ${via}`, `${all} − ${via} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+    ]},
+    { id: 'group', name: '組分け', gens: [
+      () => { const a = ri(2, 3), b = ri(a + 1, 5); return { q: `${a + b} 人を ${a} 人と ${b} 人の 2 つの組に分ける。分け方は何通りあるか。`, ans: C(a + b, a),
+        hint: `人数が違うので、${a} 人の組を選べば残りは自動的に決まります。`, steps: [`${a} 人の組を選ぶと、残り ${b} 人の組は決まる`, cExp(a + b, a)] }; },
+      () => { const k = ri(2, 3), n = 3 * k; const named = C(n, k) * C(2 * k, k);
+        return { q: `${n} 人を ${k} 人ずつ A, B, C の 3 つの部屋に分ける。分け方は何通りあるか。`, ans: named,
+        hint: `A の部屋、B の部屋の順に入る人を選びます（C は残り）。`, steps: [`A：${cExp(n, k)}`, `B：${cExp(2 * k, k)}`, `C：残りの ${k} 人で 1 通り`, `${C(n, k)} × ${C(2 * k, k)} = <span class="ans">${fmt(named)} 通り</span>`] }; },
+      () => { const k = ri(2, 3), n = 3 * k; const named = C(n, k) * C(2 * k, k), ans = named / 6;
+        return { q: `${n} 人を ${k} 人ずつ 3 つの組に分ける（組には名前がない）。分け方は何通りあるか。`, ans,
+        hint: `まず A, B, C と名前があるとして数え、名前の入れかえ 3! で割ります。`, steps: [`名前があるとき：${C(n, k)} × ${C(2 * k, k)} = ${named}`, `組の名前の付け方 3! = 6 通りが同じ分け方になる`, `${named} ÷ 6 = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const k = ri(2, 4); const ans = C(2 * k, k) / 2;
+        return { q: `${2 * k} 人を ${k} 人ずつの 2 つの組に分ける（組には名前がない）。分け方は何通りあるか。`, ans,
+        hint: `${nC(2 * k, k)} では、同じ分け方を 2 回ずつ数えています。`, steps: [cExp(2 * k, k), `2 つの組の入れかえ 2! で割る`, `${C(2 * k, k)} ÷ 2 = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const n = ri(4, 7); const ans = (2 ** n - 2) / 2;
+        return { q: `${n} 人を 2 つの組に分ける。どの組にも少なくとも 1 人入り、組には名前がないとき、分け方は何通りあるか。`, ans,
+        hint: `A, B の名前がある 2 部屋に分ける（空なし）と考え、最後に 2 で割ります。`, steps: [`A, B に分ける（空なし）：2<sup>${n}</sup> − 2 = ${2 ** n - 2}`, `A, B の区別をなくすため ÷ 2`, `<span class="ans">${fmt(ans)} 通り</span>`] }; },
+      () => { const [x, y, z] = pick([[1, 2, 3], [1, 2, 4], [1, 3, 4], [2, 3, 4]]); const n = x + y + z; const ans = C(n, x) * C(n - x, y);
+        return { q: `${n} 人を ${x} 人、${y} 人、${z} 人の 3 つの組に分ける。分け方は何通りあるか。`, ans,
+        hint: `人数がすべて違うので、組を区別できます。割る必要はありません。`, steps: [`${x} 人の組：${cExp(n, x)}`, `${y} 人の組：${cExp(n - x, y)}`, `残り ${z} 人で 1 通り`, `${C(n, x)} × ${C(n - x, y)} = <span class="ans">${fmt(ans)} 通り</span>`] }; },
+    ]},
+    { id: 'hcomb', name: '重複組合せ', adv: true, gens: [
+      () => { const n = ri(4, 10); const ans = C(n + 2, 2);
+        return { q: `x + y + z = ${n} を満たす 0 以上の整数 x, y, z の組は何組あるか。`, ans, unit: '組',
+        hint: `○ ${n} 個としきり｜2 本の並べ方と同じです。`, steps: [`○ ${n} 個と｜2 本、合計 ${n + 2} か所から｜の位置 2 か所を選ぶ`, cExp(n + 2, 2)] }; },
+      () => { const n = ri(5, 12); const ans = C(n - 1, 2);
+        return { q: `x + y + z = ${n} を満たす正の整数 x, y, z の組は何組あるか。`, ans, unit: '組',
+        hint: `○ ${n} 個の間の ${n - 1} か所から、しきりを入れる 2 か所を選びます。`, steps: [`○ ${n} 個を並べ、その間 ${n - 1} か所から 2 か所選んでしきりを入れる（両端・同じ場所は不可）`, cExp(n - 1, 2)] }; },
+      () => { const k = ri(3, 4), n = ri(4, 8); const ans = C(n + k - 1, k - 1); const kinds = ['りんご', 'みかん', 'もも', 'なし'].slice(0, k).join('、');
+        return { q: `${kinds} の ${k} 種類の果物から、合計 ${n} 個を買う。買わない種類があってもよいとき、買い方は何通りあるか。`, ans,
+        hint: `○ ${n} 個としきり ${k - 1} 本の並べ方です。`, steps: [`○ ${n} 個と｜${k - 1} 本、合計 ${n + k - 1} か所から｜の位置を選ぶ`, cExp(n + k - 1, k - 1)] }; },
+      () => { const n = ri(6, 10); const ans = C(n - 1, 2);
+        return { q: `同じりんご ${n} 個を A, B, C の 3 人に分ける。どの人も少なくとも 1 個はもらうとき、分け方は何通りあるか。`, ans,
+        hint: `先に 1 個ずつ配ると、残り ${n - 3} 個を自由に分ける問題になります。`, steps: [`先に 1 個ずつ配る → 残り ${n - 3} 個を 3 人に（0 個も可）`, `○ ${n - 3} 個と｜2 本：${cExp(n - 1, 2)}`] }; },
+    ]},
+  ];
+  const topicById = Object.fromEntries(TOPICS.map(t => [t.id, t]));
+
+  // ---------- 演習問題 ----------
+  const EXAMS = {
+    basic: [
+      { t: 'calc', q: `${nP(6, 3)} を計算しなさい。`, ans: 120, unit: '', steps: [pExp(6, 3)] },
+      { t: 'calc', q: `${nC(8, 3)} を計算しなさい。`, ans: 56, unit: '', steps: [cExp(8, 3)] },
+      { t: 'perm', q: `5 人が一列に並ぶ。並び方は何通りあるか。`, ans: 120, steps: [`5 人全員の順列なので 5!`, fExp(5)] },
+      { t: 'comb', q: `男子 4 人、女子 3 人の中から 3 人の委員を選ぶ。選び方は何通りあるか。`, ans: 35, steps: [`合計 7 人から 3 人を選ぶ（順番なし）`, cExp(7, 3)] },
+      { t: 'perm', q: `5 個の数字 0, 1, 2, 3, 4 から異なる 3 個を使って 3 桁の整数をつくる。整数は何個できるか。`, ans: 48, unit: '個', steps: [`百の位：0 以外の 4 通り`, `十の位・一の位：残り 4 個から 2 個並べる ${pExp(4, 2)}`, `4 × 12 = <span class="ans">48 個</span>`] },
+      { t: 'circle', q: `6 人が円形のテーブルのまわりに座る。座り方は何通りあるか。`, ans: 120, steps: [`円順列 (6−1)!`, fExp(5)] },
+      { t: 'repeat', q: `a, b, c の 3 種類の文字を、重複を許して 4 個並べる。並べ方は何通りあるか。`, ans: 81, steps: [`4 か所それぞれ 3 通り`, `3<sup>4</sup> = <span class="ans">81 通り</span>`] },
+      { t: 'same', q: `SCHOOL の 6 文字をすべて並べる。並べ方は何通りあるか。`, ans: 360, steps: [`O が 2 個ある`, `${frac('6!', '2!')} = ${frac(720, 2)} = <span class="ans">360 通り</span>`] },
+      { t: 'comb', q: `正八角形の対角線は何本あるか。`, ans: 20, unit: '本', steps: [`2 頂点の選び方 ${cExp(8, 2)}`, `辺 8 本を引いて 28 − 8 = <span class="ans">20 本</span>`] },
+      { t: 'path', q: `図のような碁盤目状の道がある。A から B まで遠回りしないで行く道順は何通りあるか。`, fig: () => gridSVG(4, 3), ans: 35, steps: [`→ 4 個、↑ 3 個の並べ方`, cExp(7, 3)] },
+    ],
+    adv: [
+      { t: 'perm', q: `男子 4 人、女子 3 人が一列に並ぶとき、女子 3 人が続いて並ぶ並び方は何通りあるか。`, ans: 720, steps: [`女子 3 人をまとめて 1 人と考え、5 個の並べ方 5! = 120`, `女子の中の並び方 3! = 6`, `120 × 6 = <span class="ans">720 通り</span>`] },
+      { t: 'perm', q: `男子 4 人、女子 3 人が一列に並ぶとき、女子どうしが隣り合わない並び方は何通りあるか。`, ans: 1440, steps: [`男子 4 人を並べる 4! = 24`, `男子の間と両端の 5 か所から 3 か所選んで女子を並べる ${pExp(5, 3)}`, `24 × 60 = <span class="ans">1,440 通り</span>`] },
+      { t: 'perm', q: `1, 2, 3, 4, 5, 6 の 6 個の数字から異なる 4 個を使って 4 桁の整数をつくる。そのうち偶数は何個あるか。`, ans: 180, unit: '個', steps: [`一の位は 2, 4, 6 の 3 通り`, `残りの 3 けた：残り 5 個から 3 個並べる ${pExp(5, 3)}`, `3 × 60 = <span class="ans">180 個</span>`] },
+      { t: 'comb', q: `男子 5 人、女子 4 人の中から 4 人を選ぶとき、女子が少なくとも 1 人含まれる選び方は何通りあるか。`, ans: 121, steps: [`全体 ${cExp(9, 4)}`, `全員男子 ${cExp(5, 4)}`, `126 − 5 = <span class="ans">121 通り</span>`] },
+      { t: 'group', q: `9 人を 3 人ずつの 3 つの組に分ける（組には名前がない）。分け方は何通りあるか。`, ans: 280, steps: [`名前があるとき ${nC(9, 3)} × ${nC(6, 3)} = 84 × 20 = 1,680`, `組の入れかえ 3! = 6 で割る`, `1680 ÷ 6 = <span class="ans">280 通り</span>`] },
+      { t: 'repeat', q: `7 人を A, B の 2 つの部屋に入れる。どちらの部屋にも少なくとも 1 人は入るとき、入れ方は何通りあるか。`, ans: 126, steps: [`空き部屋ありで 2<sup>7</sup> = 128`, `全員が同じ部屋の 2 通りを引く`, `128 − 2 = <span class="ans">126 通り</span>`] },
+      { t: 'path', q: `図のような碁盤目状の道がある。A から P を通って B まで遠回りしないで行く道順は何通りあるか。`, fig: () => gridSVG(5, 4, [2, 1]), ans: 60, steps: [`A → P：→ 2 個、↑ 1 個 → ${nC(3, 1)} = 3`, `P → B：→ 3 個、↑ 3 個 → ${cExp(6, 3)}`, `3 × 20 = <span class="ans">60 通り</span>`] },
+      { t: 'hcomb', q: `x + y + z = 8 を満たす 0 以上の整数 x, y, z の組は何組あるか。`, ans: 45, unit: '組', steps: [`○ 8 個と｜2 本の並べ方`, cExp(10, 2)] },
+      { t: 'circle', q: `色の異なる 6 個の玉にひもを通して首飾りをつくる。何通りの首飾りができるか。`, ans: 60, steps: [`円順列 (6−1)! = 120`, `裏返すと同じなので ÷ 2`, `120 ÷ 2 = <span class="ans">60 通り</span>`] },
+      { t: 'perm', q: `A, B, C, D の 4 人がそれぞれプレゼントを 1 つずつ持ち寄り、交換する。全員が自分以外の人のプレゼントを受け取る受け取り方は何通りあるか。`, ans: 9, steps: [`A が B のものを受け取る場合を樹形図で書き出す（B, C, D の順に受け取るもの）：`, `A←B のとき：(B, C, D) が受け取るのは (A, D, C)、(C, D, A)、(D, A, C) の 3 通り`, `A が C、D のものを受け取る場合も同じく 3 通りずつ`, `3 × 3 = <span class="ans">9 通り</span>`] },
+    ],
+  };
+
+  // ---------- 画面切りかえ ----------
+  const views = ['learn', 'train', 'exam'];
+  function route() {
+    let v = location.hash.slice(1);
+    if (!views.includes(v)) {
+      const el = v && document.getElementById(v);
+      if (el && el.closest('[data-v="learn"]')) { show('learn'); el.scrollIntoView(); return; }
+      v = 'learn';
+    }
+    show(v);
+  }
+  function show(v) {
+    document.querySelectorAll('[data-v]').forEach(s => { s.hidden = s.dataset.v !== v; });
+    document.querySelectorAll('nav.tabs a').forEach(a => a.setAttribute('aria-current', a.dataset.view === v ? 'page' : 'false'));
+  }
+  window.addEventListener('hashchange', route);
+
+  // ---------- 学ぶ：図とラボ ----------
+  document.getElementById('learnGrid').innerHTML = gridSVG(4, 3, [1, 2]);
+  const labN = document.getElementById('labN'), labR = document.getElementById('labR');
+  function renderLab() {
+    const n = +labN.value, r = Math.min(+labR.value, n);
+    const L = 'ABCDE'.slice(0, n).split('');
+    const combos = [];
+    (function rec(start, cur) { if (cur.length === r) { combos.push(cur.slice()); return; } for (let i = start; i < n; i++) { cur.push(L[i]); rec(i + 1, cur); cur.pop(); } })(0, []);
+    const perms = arr => arr.length <= 1 ? [arr] : arr.flatMap((x, i) => perms([...arr.slice(0, i), ...arr.slice(i + 1)]).map(p => [x, ...p]));
+    document.getElementById('labOut').innerHTML = combos.map(c => `<div class="set"><span>{${c.join(', ')}}</span><span class="perms">${perms(c).map(p => `<span>${p.join('')}</span>`).join('')}</span></div>`).join('');
+    document.getElementById('labSum').innerHTML = `${nP(n, r)} = ${fmt(P(n, r))}　=　${nC(n, r)} (${C(n, r)} 組) × ${r}! (${fact(r)} 通り)`;
+  }
+  labN.addEventListener('change', renderLab); labR.addEventListener('change', renderLab);
+  renderLab();
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { setTopic(b.dataset.go); location.hash = 'train'; }));
+
+  // ---------- トレーニング ----------
+  let stats = store.get('stats', {});
+  let streak = 0, best = store.get('streakBest', 0);
+  let topic = store.get('topic', 'mix');
+  let cur = null, attempted = false, solved = false, count = 0;
+  const $ = id => document.getElementById(id);
+
+  function renderChips() {
+    const all = [{ id: 'mix', name: 'ミックス' }, ...TOPICS];
+    $('topicChips').innerHTML = all.map(t => {
+      const s = t.id === 'mix' ? Object.values(stats).reduce((a, x) => ({ ok: a.ok + x.ok, n: a.n + x.n }), { ok: 0, n: 0 }) : (stats[t.id] || { ok: 0, n: 0 });
+      return `<button type="button" class="chip" data-topic="${t.id}" aria-pressed="${t.id === topic}">${t.name}${t.adv ? ' <span class="tag adv">発展</span>' : ''}<span class="cnt">${s.ok}/${s.n}</span></button>`;
+    }).join('');
+    $('topicChips').querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { setTopic(c.dataset.topic); }));
+    const tot = Object.values(stats).reduce((a, x) => ({ ok: a.ok + x.ok, n: a.n + x.n }), { ok: 0, n: 0 });
+    $('trainStats').innerHTML = `<span>正解 <b>${tot.ok}</b> / ${tot.n} 問</span><span>正答率 <b>${tot.n ? Math.round(tot.ok / tot.n * 100) : 0}%</b></span><span>連続正解 <b>${streak}</b></span><span>最高連続 <b>${best}</b></span>`;
+  }
+  function setTopic(id) { topic = id; store.set('topic', id); renderChips(); newProblem(); }
+
+  function newProblem() {
+    const t = topic === 'mix' ? pick(TOPICS.filter(x => !x.adv)) : topicById[topic];
+    let p; let guard = 0;
+    do { p = pick(t.gens)(); guard++; } while (cur && p.q === cur.q && guard < 10);
+    cur = { ...p, topic: t.id, tname: t.name };
+    attempted = false; solved = false; count++;
+    $('probTag').textContent = t.name;
+    $('probNo').textContent = `第 ${count} 問`;
+    $('probQ').innerHTML = p.q;
+    $('probFig').innerHTML = p.fig || '';
+    $('probUnit').textContent = p.unit === undefined ? '通り' : p.unit;
+    $('ansInput').value = '';
+    $('probFeedback').innerHTML = '';
+    $('probSteps').hidden = true;
+    $('probSteps').innerHTML = `<div class="steps">${p.steps.map(s => `<div>${s}</div>`).join('')}<div class="ans">答え：${fmt(p.ans)} ${p.unit === undefined ? '通り' : p.unit}</div></div>`;
+    $('checkBtn').disabled = false;
+  }
+  const parseAns = s => { const t = s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[,，\s通り個本組]/g, ''); return /^-?\d+$/.test(t) ? Number(t) : NaN; };
+
+  $('ansForm').addEventListener('submit', e => {
+    e.preventDefault();
+    if (solved) { newProblem(); $('ansInput').focus(); return; }
+    const v = parseAns($('ansInput').value);
+    if (Number.isNaN(v)) { $('probFeedback').innerHTML = `<div class="feedback hint">数字で答えを入力してください（例：120）。</div>`; return; }
+    const ok = v === cur.ans;
+    if (!attempted) {
+      attempted = true;
+      const s = stats[cur.topic] || { ok: 0, n: 0 }; s.n++; if (ok) s.ok++; stats[cur.topic] = s; store.set('stats', stats);
+      if (ok) { streak++; if (streak > best) { best = streak; store.set('streakBest', best); } } else streak = 0;
+    }
+    if (ok) {
+      solved = true;
+      $('probFeedback').innerHTML = `<div class="feedback ok">正解！ ${fmt(cur.ans)} ${$('probUnit').textContent}。解説で考え方も確認しよう。</div>`;
+      $('probSteps').hidden = false; $('checkBtn').disabled = true;
+    } else {
+      $('probFeedback').innerHTML = `<div class="feedback ng">${fmt(v)} ではありません。ヒントを見てもう一度考えるか、解説を見よう。</div>`;
+    }
+    renderChips();
+  });
+  $('hintBtn').addEventListener('click', () => { $('probFeedback').innerHTML = `<div class="feedback hint"><b>ヒント</b>　${cur.hint}</div>`; });
+  $('showBtn').addEventListener('click', () => {
+    if (!attempted) { attempted = true; const s = stats[cur.topic] || { ok: 0, n: 0 }; s.n++; stats[cur.topic] = s; store.set('stats', stats); streak = 0; renderChips(); }
+    $('probSteps').hidden = false;
+  });
+  $('nextBtn').addEventListener('click', () => { newProblem(); $('ansInput').focus(); });
+
+  // ---------- 演習問題 ----------
+  let examSet = 'basic';
+  let examDraft = store.get('examDraft', { basic: {}, adv: {} });
+  function renderExam() {
+    const list = EXAMS[examSet];
+    document.querySelectorAll('[data-set]').forEach(b => b.setAttribute('aria-pressed', b.dataset.set === examSet));
+    const bestS = store.get('examBest', {})[examSet];
+    $('bestScore').textContent = bestS !== undefined ? `これまでの最高：${bestS} / ${list.length} 問` : 'まだ採点していません';
+    $('examResult').hidden = true;
+    $('examForm').innerHTML = list.map((p, i) => {
+      const unit = p.unit === undefined ? '通り' : p.unit;
+      return `<div class="exam-item" id="ex-${i}">
+        <div class="head"><span class="no">問${i + 1}</span><span class="tag${topicById[p.t].adv ? ' adv' : ''}">${topicById[p.t].name}</span><span class="verdict" hidden></span></div>
+        <div class="q">${p.q}</div>${p.fig ? `<div class="fig">${p.fig()}</div>` : ''}
+        <div class="answer-row"><label for="exa-${examSet}-${i}" class="muted">答え</label><input type="text" inputmode="numeric" id="exa-${examSet}-${i}" data-i="${i}" value="${examDraft[examSet][i] || ''}"><span class="unit">${unit}</span></div>
+        <details hidden><summary>解説</summary><div class="steps">${p.steps.map(s => `<div>${s}</div>`).join('')}<div class="ans">答え：${fmt(p.ans)} ${unit}</div></div></details>
+      </div>`;
+    }).join('');
+    $('examForm').querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => { examDraft[examSet][inp.dataset.i] = inp.value; store.set('examDraft', examDraft); }));
+  }
+  function grade() {
+    const list = EXAMS[examSet]; let score = 0; const wrongTopics = new Set(); let blank = 0;
+    list.forEach((p, i) => {
+      const item = $('ex-' + i), inp = item.querySelector('input'), v = parseAns(inp.value), ok = v === p.ans;
+      if (inp.value.trim() === '') blank++;
+      if (ok) score++; else wrongTopics.add(p.t);
+      item.classList.toggle('ok', ok); item.classList.toggle('ng', !ok);
+      const vd = item.querySelector('.verdict'); vd.hidden = false; vd.className = 'verdict ' + (ok ? 'ok' : 'ng'); vd.textContent = ok ? '正解' : (inp.value.trim() === '' ? '未解答' : '不正解');
+      const d = item.querySelector('details'); d.hidden = false; d.open = !ok;
+    });
+    const bests = store.get('examBest', {}); if (bests[examSet] === undefined || score > bests[examSet]) { bests[examSet] = score; store.set('examBest', bests); }
+    const msg = score === list.length ? '全問正解です。よくできました！' : score >= list.length * 0.7 ? 'あと少し。まちがえた単元を練習して満点をめざそう。' : 'まちがえた問題の解説を読んでから、トレーニングで単元を練習しよう。';
+    const res = $('examResult');
+    res.hidden = false;
+    res.innerHTML = `<span class="eyebrow">${examSet === 'basic' ? '基本演習' : '応用演習'}の結果</span>
+      <div class="score">${score}<small> / ${list.length} 問正解</small></div><p>${msg}${blank ? `（未解答 ${blank} 問）` : ''}</p>
+      ${wrongTopics.size ? `<div class="row"><span class="muted small">練習するとよい単元：</span>${[...wrongTopics].map(t => `<button type="button" class="ghost" data-go2="${t}">${topicById[t].name}</button>`).join('')}</div>` : ''}`;
+    res.querySelectorAll('[data-go2]').forEach(b => b.addEventListener('click', () => { setTopic(b.dataset.go2); location.hash = 'train'; window.scrollTo(0, 0); }));
+    $('bestScore').textContent = `これまでの最高：${store.get('examBest', {})[examSet]} / ${list.length} 問`;
+    res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  document.querySelectorAll('[data-set]').forEach(b => b.addEventListener('click', () => { examSet = b.dataset.set; renderExam(); }));
+  $('gradeBtn').addEventListener('click', grade);
+  $('resetBtn').addEventListener('click', () => { examDraft[examSet] = {}; store.set('examDraft', examDraft); renderExam(); window.scrollTo(0, 0); });
+  $('examForm').addEventListener('submit', e => e.preventDefault());
+
+  renderChips(); newProblem(); renderExam(); route();
+
+  // 動作確認用（ブラウザのコンソールで junretsuSelfTest() を実行）
+  window.junretsuSelfTest = () => TOPICS.flatMap(t => t.gens.map((g, i) => { const p = g(); return { topic: t.id, i, ok: Number.isInteger(p.ans) && p.ans > 0 }; })).filter(r => !r.ok);
+})();
+</script>
+</body>
+</html>
