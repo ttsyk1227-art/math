@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>場合の数 パターン練習</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Maru+Gothic:wght@700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#home" class="brand">場合の数 パターン練習</a>
+      <nav class="nav" aria-label="メニュー">
+        <a href="#map" data-view="map">早見表</a>
+        <a href="#quiz" data-view="quiz">パターン当て</a>
+        <a href="#drill" data-view="drill">ドリル</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ホーム -->
+    <section id="view-home" class="view">
+      <div class="hero">
+        <p class="eyebrow">数学A ・ 場合の数</p>
+        <h1>条件を見れば、考え方が決まる</h1>
+        <p class="lead">「隣り合う」ならまとめる、「少なくとも」なら全体から引く、「組に名前がない」なら割る。場合の数の問題を「並べる・選ぶ・分ける」に分けて、条件ごとに28のパターンに整理しました。</p>
+      </div>
+      <h2 class="small-h">おすすめの順番</h2>
+      <ol class="steps">
+        <li><a href="#map" class="step"><span class="step-no">1</span><span><strong>早見表</strong><small>条件 → 考え方 → 式 → 例。28パターンの一覧</small></span></a></li>
+        <li><a href="#quiz" class="step"><span class="step-no">2</span><span><strong>パターン当て</strong><small>問題文を読んで、使う考え方を4つから選ぶ</small><span class="stat" id="stat-quiz"></span></span></a></li>
+        <li><a href="#drill" class="step"><span class="step-no">3</span><span><strong>ドリル</strong><small>実際に計算して答える。まちがえたパターンは早見表に記録</small><span class="stat" id="stat-drill"></span></span></a></li>
+      </ol>
+      <p class="print-link"><a href="print.html">印刷用プリント（まとめ2ページ＋確認テスト＋解答）を開く →</a></p>
+    </section>
+
+    <!-- 早見表 -->
+    <section id="view-map" class="view" hidden>
+      <h2>早見表</h2>
+      <p class="sub">問題文の条件を見つけたら、表から考え方を選ぼう。</p>
+      <div class="flow">
+        <h3>見分ける4ステップ</h3>
+        <ol id="flow-list"></ol>
+      </div>
+      <div class="tools-box">
+        <h3>いつでも使える8つの考え方</h3>
+        <dl id="tools-list"></dl>
+      </div>
+      <div class="group-tabs chips" id="map-tabs" role="tablist" aria-label="グループ"></div>
+      <div id="map-cards" class="pgrid"></div>
+      <div class="pitfalls">
+        <h3>まちがえやすいポイント</h3>
+        <ul id="pitfalls-list"></ul>
+      </div>
+    </section>
+
+    <!-- パターン当て -->
+    <section id="view-quiz" class="view" hidden>
+      <h2>パターン当て</h2>
+      <p class="sub">計算はしなくてOK。問題文の条件から、使う考え方を選ぼう。</p>
+      <div class="filters">
+        <div class="chips" id="quiz-groups" role="group" aria-label="グループ"></div>
+      </div>
+      <div id="quiz-trainer"></div>
+    </section>
+
+    <!-- ドリル -->
+    <section id="view-drill" class="view" hidden>
+      <h2>ドリル</h2>
+      <p class="sub">問題は毎回ランダムに作られます。答えたら、使うパターンと解き方を確認しよう。</p>
+      <div class="filters">
+        <div class="chips" id="drill-groups" role="group" aria-label="グループ"></div>
+        <div class="select-row">
+          <label for="drill-pattern">パターン</label>
+          <select id="drill-pattern"></select>
+        </div>
+        <label class="toggle"><input type="checkbox" id="drill-weak">まちがえたパターンを多めに出す</label>
+      </div>
+      <div id="drill-trainer"></div>
+    </section>
+  </main>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
