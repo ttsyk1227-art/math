@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>確率の解き方ナビ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Maru+Gothic:wght@700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#home" class="brand">確率の解き方ナビ</a>
+      <nav class="nav" aria-label="メニュー">
+        <a href="#guide" data-view="guide">解き方</a>
+        <a href="#checker" data-view="checker">問題チェック</a>
+        <a href="#classify" data-view="classify">見分け</a>
+        <a href="#drill" data-view="drill">ドリル</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ホーム -->
+    <section id="view-home" class="view">
+      <div class="hero">
+        <p class="eyebrow">数学A ・ 確率</p>
+        <h1>確率の解き方ナビ</h1>
+        <p class="lead">確率の問題は、問題文の中の「ことば」で解き方が決まります。「少なくとも」なら余事象、「〜であったとき」なら条件付き確率。まずは見分け方を覚えて、ドリルで手を動かそう。</p>
+      </div>
+      <h2 class="small-h">おすすめの順番</h2>
+      <ol class="steps">
+        <li><a href="#guide" class="step"><span class="step-no">1</span><span><strong>解き方ガイド</strong><small>8つの解き方と、見分けるためのキーワード</small></span></a></li>
+        <li><a href="#checker" class="step"><span class="step-no">2</span><span><strong>問題チェック</strong><small>問題文を貼りつけると、使う解き方を教えてくれる</small></span></a></li>
+        <li><a href="#classify" class="step"><span class="step-no">3</span><span><strong>見分けクイズ</strong><small>問題文を読んで、解き方を選ぶ練習</small><span class="stat" id="stat-classify"></span></span></a></li>
+        <li><a href="#drill" class="step"><span class="step-no">4</span><span><strong>ドリル</strong><small>毎回ちがう問題を、分数で答える。解説つき</small><span class="stat" id="stat-drill"></span></span></a></li>
+      </ol>
+    </section>
+
+    <!-- 解き方ガイド -->
+    <section id="view-guide" class="view" hidden>
+      <h2>解き方ガイド</h2>
+      <p class="sub">問題文を読んだら、上から順にチェック。最初に「はい」になったものが使う解き方です。</p>
+      <div class="flow">
+        <h3>どの解き方を使う？ 見分け方</h3>
+        <ol id="flow-list"></ol>
+      </div>
+      <div class="fgrid" id="method-cards"></div>
+    </section>
+
+    <!-- 問題チェック -->
+    <section id="view-checker" class="view" hidden>
+      <h2>問題チェック</h2>
+      <p class="sub">教科書や問題集の問題文を入力すると、手がかりになる「ことば」に色をつけて、使う解き方を教えます。</p>
+      <div class="qcard">
+        <label for="checker-input" class="label">問題文</label>
+        <textarea id="checker-input" rows="5" placeholder="例：1個のさいころを3回投げるとき、少なくとも1回は6の目が出る確率を求めよ。"></textarea>
+        <div class="tools">
+          <button type="button" id="checker-run" class="btn primary">解き方を調べる</button>
+          <button type="button" id="checker-clear" class="btn ghost">消す</button>
+        </div>
+        <p class="label sample-label">例の問題で試す</p>
+        <div class="chips" id="checker-samples"></div>
+      </div>
+      <div id="checker-result" aria-live="polite"></div>
+    </section>
+
+    <!-- 見分けクイズ -->
+    <section id="view-classify" class="view" hidden>
+      <h2>見分けクイズ</h2>
+      <p class="sub">計算はしなくてOK。問題文を読んで、最初に使う解き方を選ぼう。</p>
+      <div id="classify-trainer"></div>
+    </section>
+
+    <!-- ドリル -->
+    <section id="view-drill" class="view" hidden>
+      <h2>ドリル</h2>
+      <p class="sub">問題は毎回ランダムに作られます。答えは約分した分数で入力しよう。</p>
+      <div class="filters">
+        <div class="chips" id="drill-methods" role="group" aria-label="解き方"></div>
+        <div class="chips" id="drill-level" role="radiogroup" aria-label="レベル">
+          <label class="chip"><input type="radio" name="drill-level" value="1" checked>基本</label>
+          <label class="chip"><input type="radio" name="drill-level" value="2">標準</label>
+          <label class="chip"><input type="radio" name="drill-level" value="all">ぜんぶ</label>
+        </div>
+        <div class="chip-actions">
+          <button type="button" class="btn ghost small" id="drill-all">すべて選ぶ</button>
+        </div>
+      </div>
+      <div id="drill-trainer"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
