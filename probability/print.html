@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>確率の解き方まとめ（プリント）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Maru+Gothic:wght@700&display=swap">
+  <style>
+    /* A4 縦のプリント。1〜2ページ目がまとめ、そのあと確認テストと解答 */
+    :root {
+      --ink: #1b2430;
+      --muted: #5d6b78;
+      --line: #b9c4cd;
+      --soft: #eef1f8;
+      --accent: #3443b8;
+      --warn: #b4441c;
+      --hl: #fff1a8;
+    }
+    @page { size: A4; margin: 11mm 12mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: var(--ink);
+      font-family: "Zen Kaku Gothic New", "IPAGothic", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font-size: 8.9pt;
+      line-height: 1.45;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sheet { max-width: 186mm; margin: 0 auto; padding: 8mm 0; }
+    @media screen { body { background: #e7ebee; } .sheet { background: #fff; padding: 12mm; margin: 12px auto; box-shadow: 0 1px 4px rgb(0 0 0 / 0.12); } }
+    @media print { .no-print { display: none !important; } .sheet { padding: 0; } }
+    .page-break { break-before: page; }
+
+    header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 2.5px solid var(--ink); padding-bottom: 4px; }
+    h1 { font-family: "Zen Maru Gothic", "IPAGothic", sans-serif; font-size: 19pt; margin: 0; line-height: 1.2; }
+    .sub { color: var(--muted); font-size: 9pt; margin: 0 0 2px; }
+    .name { font-size: 9.5pt; white-space: nowrap; }
+    .name span { display: inline-block; border-bottom: 1px solid var(--ink); min-width: 9mm; text-align: center; }
+    .name .n { min-width: 34mm; }
+    h2 { font-size: 11.5pt; margin: 10px 0 5px; padding-left: 7px; border-left: 4px solid var(--accent); line-height: 1.3; }
+    h2 small { font-weight: 400; color: var(--muted); font-size: 8.5pt; margin-left: 6px; }
+
+    .nt { font-family: "Cambria Math", "Times New Roman", "IPAMincho", serif; white-space: nowrap; }
+    .nt sub, .nt sup { font-size: 0.7em; }
+    .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; line-height: 1.25; }
+    .frac > span { padding: 0 3px; }
+    .frac > span:last-child { border-top: 1px solid currentColor; }
+
+    /* 確率の基本 */
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid var(--line); padding: 4px 6px; vertical-align: middle; }
+    th { background: var(--soft); text-align: left; font-size: 8.6pt; }
+    .basics col.c1 { width: 18%; } .basics col.c2 { width: 44%; } .basics col.c3 { width: 38%; }
+    .basics td:nth-child(2) { font-family: "Cambria Math", "Times New Roman", "IPAMincho", serif; }
+    .basics td:nth-child(3) { color: var(--muted); font-size: 8.4pt; }
+
+    /* 見分ける順番 */
+    .flow { list-style: none; margin: 0; padding: 0; counter-reset: s; display: grid; gap: 3px; }
+    .flow li { counter-increment: s; display: grid; grid-template-columns: 7mm 1fr 50mm; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 5px; padding: 5px 6px; }
+    .flow li::before { content: counter(s); width: 6mm; height: 6mm; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 8.5pt; }
+    .flow .q { font-weight: 700; }
+    .flow .to { color: var(--accent); font-weight: 700; }
+    .flow .to::before { content: "はい → "; color: var(--muted); font-weight: 400; }
+    .flow-note { color: var(--muted); font-size: 8.3pt; margin: 3px 0 0; }
+
+    .pitfalls { border: 1.5px solid var(--warn); border-radius: 6px; padding: 5px 10px; margin-top: 10px; }
+    .pitfalls h2 { border: 0; padding: 0; margin: 0 0 2px; color: var(--warn); }
+    .pitfalls ul { margin: 0; padding-left: 1.2em; columns: 2; column-gap: 16px; font-size: 8.6pt; }
+    .pitfalls li { break-inside: avoid; }
+
+    /* 8つの解き方 */
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+    .card { border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; break-inside: avoid; }
+    .card h3 { margin: 0; font-size: 10.5pt; display: flex; align-items: center; gap: 6px; }
+    .card h3 .no { background: var(--accent); color: #fff; border-radius: 4px; padding: 0 6px; font-size: 8.5pt; }
+    .card .kw { margin: 3px 0; display: flex; flex-wrap: wrap; gap: 3px; }
+    .card .kw span { background: var(--hl); border-radius: 3px; padding: 0 5px; font-size: 8pt; }
+    .card .f { font-family: "Cambria Math", "Times New Roman", "IPAMincho", serif; font-size: 10pt; margin: 3px 0; }
+    .card ol { margin: 2px 0; padding-left: 1.3em; font-size: 8.3pt; }
+    .card .ex { background: var(--soft); border-radius: 4px; padding: 3px 6px; margin-top: 4px; font-size: 8.3pt; }
+    .card .ex b { color: var(--accent); }
+
+    /* 確認テスト */
+    .test { list-style: none; padding: 0; margin: 6px 0 0; counter-reset: q; }
+    .test > li { counter-increment: q; border-bottom: 1px dashed var(--line); padding: 5px 0 5px 2.4em; position: relative; display: grid; grid-template-columns: 1fr 30mm 26mm; gap: 6px; align-items: end; break-inside: avoid; min-height: 14mm; }
+    .test > li::before { content: "(" counter(q) ")"; position: absolute; left: 0; top: 5px; font-weight: 700; }
+    .test .q { align-self: start; }
+    .test .box { border: 1px solid var(--ink); height: 11mm; font-size: 7.5pt; color: var(--muted); padding: 1px 3px; }
+    .test-head { display: grid; grid-template-columns: 1fr 30mm 26mm; gap: 6px; padding-left: 2.4em; font-size: 8pt; color: var(--muted); margin-top: 6px; }
+    .test-head span:nth-child(n+2) { text-align: center; }
+
+    .answers { list-style: none; padding: 0; margin: 6px 0 0; counter-reset: q; columns: 2; column-gap: 7mm; }
+    .answers > li { counter-increment: q; padding: 4px 0 4px 2.4em; position: relative; border-bottom: 1px dashed var(--line); break-inside: avoid; font-size: 8.6pt; }
+    .answers > li::before { content: "(" counter(q) ")"; position: absolute; left: 0; font-weight: 700; }
+    .answers .a { font-weight: 700; color: var(--accent); margin-right: 8px; }
+    .answers .m { font-weight: 700; }
+    .answers ol { margin: 2px 0 0; padding-left: 1.4em; }
+    .answers .table-wrap { margin: 2px 0; }
+    table.dist { width: auto; }
+    table.dist th, table.dist td { padding: 1px 8px; text-align: center; }
+
+    .toolbar { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 10px; background: #1b2430; }
+    .toolbar button, .toolbar a { font: inherit; font-size: 10.5pt; font-weight: 700; padding: 6px 14px; border-radius: 6px; border: 0; background: #fff; color: #1b2430; cursor: pointer; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="toolbar no-print">
+    <button type="button" onclick="window.print()">印刷する</button>
+    <button type="button" id="reroll">確認テストの問題を作り直す</button>
+    <a href="./">練習アプリへ</a>
+  </div>
+
+  <div class="sheet">
+    <header>
+      <div>
+        <p class="sub">数学A ・ 確率</p>
+        <h1>問題文でわかる！確率の解き方まとめ</h1>
+      </div>
+      <p class="name"><span></span>年 <span></span>組 <span></span>番　名前 <span class="n"></span></p>
+    </header>
+
+    <h2>確率の基本<small>まずはここを確実に</small></h2>
+    <table class="basics">
+      <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+      <tbody id="basics"></tbody>
+    </table>
+
+    <h2>どの解き方を使う？ 見分ける順番<small>上から順にチェックして、最初に「はい」になったものを使う</small></h2>
+    <ol class="flow" id="flow"></ol>
+    <p class="flow-note">どれにも当てはまらなければ「基本（数えて求める）」。解き方を2つ以上組み合わせる問題もある（例：反復試行の「少なくとも1回」は余事象で考える）。</p>
+
+    <div class="pitfalls">
+      <h2>まちがえやすいポイント</h2>
+      <ul id="pitfalls"></ul>
+    </div>
+  </div>
+
+  <div class="sheet page-break">
+    <header>
+      <div>
+        <p class="sub">数学A ・ 確率</p>
+        <h1>8つの解き方：サイン・式・手順・例題</h1>
+      </div>
+    </header>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <div class="sheet page-break">
+    <header>
+      <div>
+        <p class="sub">数学A ・ 確率</p>
+        <h1>確認テスト</h1>
+      </div>
+      <p class="name"><span></span>年 <span></span>組 <span></span>番　名前 <span class="n"></span></p>
+    </header>
+    <p class="sub" style="margin-top:6px">問題文の中の「サイン」に線を引き、使う解き方を書いてから計算しよう。答えは約分すること。（全<span id="test-count"></span>問）</p>
+    <div class="test-head"><span></span><span>解き方</span><span>答え</span></div>
+    <ol class="test" id="test"></ol>
+  </div>
+
+  <div class="sheet page-break">
+    <header>
+      <div>
+        <p class="sub">数学A ・ 確率</p>
+        <h1>確認テスト 解答</h1>
+      </div>
+    </header>
+    <ol class="answers" id="answers"></ol>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    'use strict';
+    // 確認テストは同じ問題を印刷できるように、乱数の種を URL（?seed=）で固定する
+    function mulberry32(a) {
+      return function () {
+        a |= 0; a = (a + 0x6d2b79f5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const params = new URLSearchParams(location.search);
+    const seed = Number(params.get('seed')) || 2026;
+    Math.random = mulberry32(seed);
+
+    document.getElementById('basics').innerHTML = BASICS.map(([t, f, d]) => `<tr><th>${t}</th><td>${f}</td><td>${d}</td></tr>`).join('');
+    document.getElementById('flow').innerHTML = ORDER.filter((k) => k !== 'basic').map((k) => `<li><span class="q">${METHODS[k].flow}</span><span class="to">${METHODS[k].name}</span></li>`).join('');
+    document.getElementById('pitfalls').innerHTML = PITFALLS.map((p) => `<li>${p}</li>`).join('');
+
+    document.getElementById('cards').innerHTML = ORDER.map((k, i) => {
+      const m = METHODS[k];
+      return `
+        <section class="card">
+          <h3><span class="no">${i + 1}</span>${m.name}</h3>
+          <div class="kw">${m.keywords.map((w) => `<span>${w}</span>`).join('')}</div>
+          <p class="f">${m.formula}</p>
+          <ol>${m.steps.map((s) => `<li>${s}</li>`).join('')}</ol>
+          <div class="ex"><b>例題</b> ${m.example[0]}<br><span class="nt">${m.example[1]}</span></div>
+        </section>`;
+    }).join('');
+
+    // 確認テスト：すべての問題パターンから1問ずつ。解き方が順番でわからないように並べかえる
+    const test = GENS.map((g) => ({ m: g.m, ...g.make() }));
+    for (let i = test.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [test[i], test[j]] = [test[j], test[i]]; }
+    document.getElementById('test-count').textContent = test.length;
+    document.getElementById('test').innerHTML = test.map((t) => `
+      <li><span class="q">${t.q}</span><span class="box"></span><span class="box">${t.unit ? `<span style="float:right">${t.unit}</span>` : ''}</span></li>`).join('');
+    document.getElementById('answers').innerHTML = test.map((t) => `
+      <li><span class="a">${F(...t.ans)}${t.unit || ''}</span><span class="m">解き方：${METHODS[t.m].name}</span>
+        <ol>${t.steps.map((s) => `<li>${s}</li>`).join('')}</ol></li>`).join('');
+
+    document.getElementById('reroll').addEventListener('click', () => {
+      params.set('seed', String(Math.floor(Date.now() % 100000)));
+      location.search = params.toString();
+    });
+  </script>
+</body>
+</html>
