@@ -2,90 +2,134 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>計算ドリル</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>数学 学習アプリ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Maru+Gothic:wght@700&display=swap">
+  <style>
+    /* アプリを選ぶだけのトップ画面。方眼ノートの上に、アプリごとのカードを並べる */
+    :root {
+      --bg: #edf2f5;
+      --grid: rgb(22 35 45 / 0.06);
+      --surface: #ffffff;
+      --ink: #16232d;
+      --muted: #586977;
+      --line: #d3dde4;
+      --drill: #2563eb;
+      --comb: #0d7a6f;
+      --prob: #3443b8;
+      --pat: #b4441c;
+      --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", system-ui, sans-serif;
+      --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0e161c; --grid: rgb(228 236 241 / 0.04); --surface: #16212a; --ink: #e4ecf1; --muted: #94a5b2; --line: #2a3945;
+        --drill: #6ea0ff; --comb: #3cc2b2; --prob: #9aa8ff; --pat: #ff9a6b;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0e161c; --grid: rgb(228 236 241 / 0.04); --surface: #16212a; --ink: #e4ecf1; --muted: #94a5b2; --line: #2a3945;
+      --drill: #6ea0ff; --comb: #3cc2b2; --prob: #9aa8ff; --pat: #ff9a6b;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      line-height: 1.7;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding-block: 40px 56px;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 6vw, 2.4rem); margin: 0 0 6px; text-wrap: balance; }
+    .lead { color: var(--muted); margin: 0 0 28px; }
+    h2 { font-size: 0.9rem; color: var(--muted); letter-spacing: 0.08em; margin: 28px 0 10px; }
+
+    .apps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .app {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 4px 16px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .app:has(.main:hover) { border-color: var(--c); }
+    .icon {
+      grid-row: span 2;
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: var(--c);
+      color: var(--surface);
+      display: grid;
+      place-items: center;
+      font-family: "Cambria Math", "Times New Roman", serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .main { color: var(--ink); text-decoration: none; min-width: 0; }
+    .main strong { display: block; font-size: 1.15rem; }
+    .main span { display: block; color: var(--muted); font-size: 0.92rem; }
+    .main::after { content: "はじめる →"; display: block; color: var(--c); font-weight: 700; font-size: 0.9rem; margin-top: 4px; }
+    .extra { grid-column: 2; font-size: 0.88rem; margin: 0; }
+    .extra a { color: var(--c); }
+    .drill { --c: var(--drill); }
+    .comb { --c: var(--comb); }
+    .prob { --c: var(--prob); }
+    .pat { --c: var(--pat); }
+    a:focus-visible { outline: 3px solid var(--c, var(--ink)); outline-offset: 3px; border-radius: 4px; }
+    @media (max-width: 420px) {
+      .app { grid-template-columns: 44px 1fr; gap: 4px 12px; }
+      .icon { width: 44px; height: 44px; font-size: 1.1rem; }
+    }
+  </style>
 </head>
 <body>
-  <main class="app">
-    <h1>計算ドリル</h1>
+  <main class="wrap">
+    <h1>数学 学習アプリ</h1>
+    <p class="lead">練習したいアプリを選んでください。</p>
 
-    <!-- 設定画面 -->
-    <section id="setup" class="card">
-      <fieldset>
-        <legend>計算の種類</legend>
-        <div class="choices" id="op-choices">
-          <label><input type="checkbox" name="op" value="+" checked> たし算</label>
-          <label><input type="checkbox" name="op" value="-" checked> ひき算</label>
-          <label><input type="checkbox" name="op" value="×"> かけ算</label>
-          <label><input type="checkbox" name="op" value="÷"> わり算</label>
-        </div>
-      </fieldset>
+    <h2>計算</h2>
+    <ul class="apps">
+      <li class="app drill">
+        <span class="icon" aria-hidden="true">＋×</span>
+        <a class="main" href="drill/"><strong>計算ドリル</strong><span>たし算・ひき算・かけ算・わり算。むずかしさと問題数を選んで練習</span></a>
+      </li>
+    </ul>
 
-      <fieldset>
-        <legend>むずかしさ</legend>
-        <div class="choices">
-          <label><input type="radio" name="level" value="1" checked> かんたん（1けた）</label>
-          <label><input type="radio" name="level" value="2"> ふつう（2けた）</label>
-          <label><input type="radio" name="level" value="3"> むずかしい（3けた）</label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>問題数</legend>
-        <div class="choices">
-          <label><input type="radio" name="count" value="10" checked> 10問</label>
-          <label><input type="radio" name="count" value="20"> 20問</label>
-          <label><input type="radio" name="count" value="50"> 50問</label>
-        </div>
-      </fieldset>
-
-      <p id="setup-error" class="error" hidden>計算の種類を1つ以上えらんでください。</p>
-      <button id="start-btn" class="primary">スタート</button>
-      <p id="best" class="best"></p>
-    </section>
-
-    <!-- 出題画面 -->
-    <section id="drill" class="card" hidden>
-      <div class="status">
-        <span id="progress">1 / 10</span>
-        <span id="timer">0.0 秒</span>
-      </div>
-      <div class="bar"><div id="bar-fill"></div></div>
-      <p id="question" class="question" aria-live="polite"></p>
-      <form id="answer-form" autocomplete="off">
-        <input id="answer" type="text" inputmode="numeric" pattern="[0-9]*" aria-label="こたえ" required>
-        <button type="submit" class="primary">こたえる</button>
-      </form>
-      <p id="feedback" class="feedback" aria-live="polite"></p>
-      <div class="keypad" id="keypad">
-        <button type="button">7</button><button type="button">8</button><button type="button">9</button>
-        <button type="button">4</button><button type="button">5</button><button type="button">6</button>
-        <button type="button">1</button><button type="button">2</button><button type="button">3</button>
-        <button type="button" data-key="clear">C</button><button type="button">0</button><button type="button" data-key="back">⌫</button>
-      </div>
-      <button id="quit-btn" class="link">やめる</button>
-    </section>
-
-    <!-- 結果画面 -->
-    <section id="result" class="card" hidden>
-      <h2>けっか</h2>
-      <p class="score"><span id="score"></span></p>
-      <p id="result-time"></p>
-      <p id="result-message" class="message"></p>
-      <div id="mistakes-wrap" hidden>
-        <h3>まちがえた問題</h3>
-        <ul id="mistakes"></ul>
-      </div>
-      <div class="actions">
-        <button id="retry-btn" class="primary">もう一度</button>
-        <button id="back-btn">設定にもどる</button>
-      </div>
-    </section>
-    <p class="more"><a href="combinatorics/">高校数学：順列・組合せトレーナーへ →</a></p>
-    <p class="more"><a href="probability/">高校数学：確率の解き方ナビへ →</a></p>
-    <p class="more"><a href="patterns/">高校数学：場合の数 パターン練習へ →</a></p>
+    <h2>高校数学A ・ 場合の数と確率</h2>
+    <ul class="apps">
+      <li class="app comb">
+        <span class="icon" aria-hidden="true"><span>ₙCᵣ</span></span>
+        <a class="main" href="combinatorics/"><strong>順列・組合せトレーナー</strong><span>公式まとめ・計算・文章題・見分けクイズ・演習問題（全30問）</span></a>
+      </li>
+      <li class="app pat">
+        <span class="icon" aria-hidden="true">28</span>
+        <a class="main" href="patterns/"><strong>場合の数 パターン練習</strong><span>「並べる・選ぶ・分ける」の28パターン。条件から考え方を選ぶ練習</span></a>
+        <p class="extra"><a href="patterns/print.html">印刷用プリント（まとめ＋確認テスト＋解答）</a></p>
+      </li>
+      <li class="app prob">
+        <span class="icon" aria-hidden="true">P</span>
+        <a class="main" href="probability/"><strong>確率の解き方ナビ</strong><span>問題文のことばから解き方を見分ける。問題チェック・見分けクイズ・ドリル</span></a>
+        <p class="extra"><a href="probability/print.html">印刷用プリント（まとめ＋確認テスト＋解答）</a></p>
+      </li>
+    </ul>
   </main>
-  <script src="app.js"></script>
 </body>
 </html>

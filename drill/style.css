@@ -195,5 +195,5 @@ button.link {
 
 .actions button { flex: 1; }
 
-.more { text-align: center; margin-top: 20px; }
-.more a { color: var(--primary); font-weight: bold; }
+.back { margin: 0 0 8px; }
+.back a { color: var(--muted); font-size: 0.95rem; }
