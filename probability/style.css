@@ -474,3 +474,4 @@ table.dist { border-collapse: collapse; margin: 6px 0; font-variant-numeric: tab
 table.dist th, table.dist td { border: 1px solid var(--line); padding: 4px 12px; text-align: center; }
 table.dist th { background: var(--accent-soft); font-weight: 700; }
 .table-wrap { overflow-x: auto; }
+.print-link { margin-top: 20px; font-weight: 700; }
