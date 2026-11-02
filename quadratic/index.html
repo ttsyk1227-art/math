@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二次不等式ラボ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;800&family=BIZ+UDPGothic:wght@400;700&family=STIX+Two+Text:ital,wght@0,500;0,600;1,500&display=swap">
+  <style>
+    :root{
+      --paper:#eef1f6;
+      --paper-raised:#ffffff;
+      --ink:#1b2130;
+      --ink-soft:#5a6478;
+      --line:#c7d0de;
+      --accent:#3452e0;
+      --accent-soft:#e4e9fb;
+      --accent-warm:#e2622a;
+      --accent-warm-soft:#fbe6da;
+      --good:#1f9d63;
+      --good-soft:#dcf3e8;
+      --bad:#d33f3f;
+      --bad-soft:#fbe1e1;
+      --shadow: 0 1px 2px rgba(27,33,48,0.06), 0 8px 24px -12px rgba(27,33,48,0.18);
+    }
+    @media (prefers-color-scheme: dark){
+      :root:not([data-theme="light"]){
+        --paper:#10141c;
+        --paper-raised:#171d29;
+        --ink:#e7ebf5;
+        --ink-soft:#a8b1c4;
+        --line:#2b3446;
+        --accent:#7d94ff;
+        --accent-soft:#232c47;
+        --accent-warm:#ff9a68;
+        --accent-warm-soft:#3a2519;
+        --good:#4ad6a0;
+        --good-soft:#123b2c;
+        --bad:#ff7676;
+        --bad-soft:#3d1c1c;
+        --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+      }
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    body{
+      background-color:var(--paper);
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size:26px 26px;
+      background-position:-1px -1px;
+      color:var(--ink);
+      font-family:"BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", sans-serif;
+      font-size:16px;
+      line-height:1.7;
+    }
+
+    h1,h2,h3{ font-family:"Shippori Mincho", serif; font-weight:600; text-wrap:balance; margin:0; color:var(--ink); }
+    .mathvar{ font-family:"STIX Two Text", serif; font-style:italic; }
+    .tab{ font-variant-numeric:tabular-nums; }
+
+    a{ color:var(--accent); }
+    button{ font-family:inherit; }
+    :focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+
+    .wrap{ max-width:1040px; margin:0 auto; padding:40px 24px 80px; }
+
+    header.top{
+      border-left:4px solid var(--accent-warm);
+      padding:4px 0 28px 20px;
+      margin-bottom:24px;
+      display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:20px;
+    }
+    .eyebrow{
+      font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft);
+      margin:0 0 10px;
+    }
+    header.top h1{ font-size:clamp(28px,4vw,40px); }
+    header.top p{ margin:10px 0 0; color:var(--ink-soft); max-width:52ch; font-size:15px; }
+
+    .header-actions{ display:flex; flex-direction:column; align-items:flex-end; gap:12px; }
+    .header-buttons{ display:flex; gap:8px; flex-wrap:wrap; }
+
+    .stats{
+      display:flex; flex-wrap:wrap; gap:14px 18px; background:var(--paper-raised); border:1px solid var(--line);
+      border-radius:10px; padding:12px 18px; box-shadow:var(--shadow);
+    }
+    .stat{ text-align:center; }
+    .stat .num{ font-family:"Shippori Mincho",serif; font-size:22px; font-variant-numeric:tabular-nums; }
+    .stat .lbl{ font-size:11px; color:var(--ink-soft); letter-spacing:0.04em; }
+
+    .card{
+      background:var(--paper-raised); border:1px solid var(--line); border-radius:14px;
+      box-shadow:var(--shadow);
+    }
+
+    /* User info card */
+    .user-info-card{ padding:20px 24px; margin-bottom:32px; }
+    .user-form-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap:16px; align-items:end; }
+    @media (max-width:720px){ .user-form-grid{ grid-template-columns:1fr 1fr; } .name-group{ grid-column:span 2; } }
+    @media (max-width:480px){ .user-form-grid{ grid-template-columns:1fr; } .name-group{ grid-column:span 1; } }
+
+    .field-group{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .field-group label{ font-size:13px; font-weight:700; color:var(--ink); }
+    .field-group label .req{ color:var(--bad); font-weight:400; }
+    .input-field{
+      width:100%; min-width:0; padding:9px 12px; border:1px solid var(--line); border-radius:8px;
+      background:var(--paper); color:var(--ink); font-size:14.5px; transition:border-color .15s;
+    }
+    .input-field:focus{ outline:none; border-color:var(--accent); background:var(--paper-raised); }
+    .input-field.input-err{ border-color:var(--bad); background:var(--bad-soft); }
+
+    .user-info-warn{
+      margin-top:12px; padding:8px 12px; background:var(--bad-soft); color:var(--bad);
+      border-radius:8px; font-size:13px; font-weight:700; display:none;
+    }
+
+    .status-badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:3px 10px; border-radius:999px; }
+    .status-badge.ok{ background:var(--good-soft); color:var(--good); }
+    .status-badge.off{ background:var(--paper); color:var(--ink-soft); border:1px solid var(--line); }
+
+    section{ margin-bottom:48px; }
+    .sec-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:18px; }
+    .sec-head h2{ font-size:22px; }
+    .sec-head .sub{ color:var(--ink-soft); font-size:14px; }
+
+    /* Guide section */
+    .guide-steps{ margin:0 0 28px; padding:0; list-style:none; counter-reset:step; display:grid; gap:10px; }
+    .guide-steps li{
+      counter-increment:step; display:grid; grid-template-columns:34px 1fr; gap:14px; align-items:start;
+      padding:12px 16px; background:var(--paper-raised); border:1px solid var(--line); border-radius:10px;
+    }
+    .guide-steps li::before{
+      content:counter(step); font-family:"Shippori Mincho",serif; font-weight:700; font-size:17px;
+      color:var(--accent); width:34px; height:34px; border-radius:50%; background:var(--accent-soft);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .guide-steps b{ font-weight:700; }
+
+    .case-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    @media (max-width:760px){ .case-grid{ grid-template-columns:1fr; } }
+    .case-card{ padding:16px 16px 18px; }
+    .case-card h3{ font-size:16px; margin-bottom:2px; }
+    .case-card .tag{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
+    .case-card .eq{ font-size:14px; color:var(--ink-soft); margin-top:8px; }
+
+    /* Practice section */
+    .practice-grid{ display:grid; grid-template-columns:1.05fr 1fr; gap:24px; align-items:start; }
+    @media (max-width:860px){ .practice-grid{ grid-template-columns:1fr; } }
+
+    .difficulty{ display:inline-flex; background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px; }
+    .difficulty button{
+      border:none; background:transparent; color:var(--ink-soft); padding:7px 16px; border-radius:999px;
+      font-size:13px; cursor:pointer; transition:background .15s, color .15s;
+    }
+    .difficulty button[aria-pressed="true"]{ background:var(--accent); color:#fff; }
+    .difficulty button:disabled{ opacity:.4; cursor:not-allowed; }
+
+    .mode-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+    .challenge-info{ font-size:13px; color:var(--accent-warm); font-weight:700; }
+
+    .problem-card{ padding:22px 22px 24px; }
+    .problem-top{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+    .equation{
+      font-family:"STIX Two Text", serif; font-size:clamp(24px,3.4vw,32px); font-weight:600;
+      letter-spacing:0.01em; margin:6px 0 18px;
+    }
+    .btn{
+      border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); border-radius:9px;
+      padding:9px 16px; font-size:14px; cursor:pointer; transition:transform .1s, border-color .15s, background .15s;
+    }
+    .btn:hover{ border-color:var(--accent); }
+    .btn:active{ transform:scale(0.98); }
+    .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+    .btn.primary:hover{ opacity:.92; }
+    .btn.ghost{ background:transparent; }
+
+    .graph-wrap{ margin-top:8px; }
+    .graph-wrap .cap{ font-size:12px; color:var(--ink-soft); margin-bottom:6px; }
+    svg.graph{ width:100%; height:auto; display:block; }
+
+    details.hint{ margin-top:16px; border-top:1px dashed var(--line); padding-top:14px; }
+    details.hint summary{ cursor:pointer; font-size:14px; color:var(--accent); font-weight:700; list-style:none; }
+    details.hint summary::-webkit-details-marker{ display:none; }
+    details.hint summary::before{ content:"▸ "; }
+    details.hint[open] summary::before{ content:"▾ "; }
+    .steps{ margin:14px 0 0; padding:0; list-style:none; counter-reset:s; display:grid; gap:10px; }
+    .steps li{ counter-increment:s; padding-left:28px; position:relative; font-size:14.5px; }
+    .steps li::before{
+      content:counter(s); position:absolute; left:0; top:1px; width:19px; height:19px; border-radius:50%;
+      background:var(--accent-soft); color:var(--accent); font-size:11px; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .steps .calc{ color:var(--ink-soft); }
+
+    .answer-card{ padding:22px; }
+    .answer-card h2{ font-size:18px; margin-bottom:4px; }
+    .answer-card .sub{ color:var(--ink-soft); font-size:13.5px; margin-bottom:16px; }
+
+    .options{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media (max-width:500px){ .options{ grid-template-columns:1fr; } }
+    .opt{
+      border:2px solid var(--line); border-radius:12px; background:var(--paper-raised); color:var(--ink); padding:10px 10px 8px;
+      cursor:pointer; text-align:left; transition:border-color .15s, transform .1s;
+    }
+    .opt:hover:not(:disabled){ border-color:var(--accent); }
+    .opt:active:not(:disabled){ transform:scale(0.99); }
+    .opt:disabled{ cursor:default; }
+    .opt .label{ display:block; margin-top:4px; font-size:14.5px; font-weight:700; text-align:center; }
+    .opt.correct{ border-color:var(--good); background:var(--good-soft); }
+    .opt.wrong{ border-color:var(--bad); background:var(--bad-soft); }
+
+    .feedback{
+      margin-top:16px; padding:14px 16px; border-radius:10px; font-size:14.5px; display:none;
+    }
+    .feedback.show{ display:block; }
+    .feedback.correct{ background:var(--good-soft); color:var(--good); }
+    .feedback.wrong{ background:var(--bad-soft); color:var(--bad); }
+    .feedback .fline{ color:var(--ink); margin-top:4px; }
+    .feedback .head{ font-weight:700; font-size:15.5px; }
+
+    .next-row{ margin-top:14px; display:flex; justify-content:flex-end; }
+
+    .result-view{ padding:14px 4px 4px; text-align:center; }
+    .result-score{ font-family:"Shippori Mincho",serif; font-size:58px; font-variant-numeric:tabular-nums; color:var(--accent); line-height:1; }
+    .result-score span{ font-size:22px; color:var(--ink-soft); }
+    .result-msg{ margin:14px 0 4px; font-size:16px; }
+    .result-best{ margin:0 0 22px; font-size:13px; color:var(--ink-soft); }
+    .result-actions{ display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+
+    /* Modals */
+    .modal-overlay{
+      position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5);
+      display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;
+    }
+    .modal{
+      background:var(--paper-raised); border:1px solid var(--line); border-radius:16px;
+      width:100%; max-width:640px; max-height:90vh; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,0.25);
+    }
+    .modal-head{
+      padding:18px 24px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;
+    }
+    .modal-head h3{ font-size:18px; }
+    .modal-body{ padding:20px 24px; display:flex; flex-direction:column; gap:16px; }
+    .code-block{
+      background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:12px;
+      font-family:monospace; font-size:12px; white-space:pre-wrap; word-break:break-all; max-height:180px; overflow-y:auto;
+    }
+
+    footer{ text-align:center; color:var(--ink-soft); font-size:12.5px; margin-top:20px; }
+    .back-link{ margin:0 0 16px; font-size:14px; }
+    .back-link a{ color:var(--ink-soft); }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <p class="back-link"><a href="../">← アプリ一覧へ</a></p>
+  <header class="top">
+    <div>
+      <p class="eyebrow">高校数学Ⅰ・数と式</p>
+      <h1>二次不等式ラボ</h1>
+      <p>グラフと数直線を見比べながら、二次不等式の解き方を練習しよう。</p>
+    </div>
+    <div class="header-actions">
+      <div class="stats">
+        <div class="stat"><div class="num tab" id="statCorrect">0</div><div class="lbl">正解</div></div>
+        <div class="stat"><div class="num tab" id="statTotal">0</div><div class="lbl">挑戦</div></div>
+        <div class="stat"><div class="num tab" id="statStreak">0</div><div class="lbl">連続正解</div></div>
+        <div class="stat"><div class="num tab" id="statBest">0</div><div class="lbl">挑戦ベスト</div></div>
+      </div>
+      <div class="header-buttons">
+        <button class="btn ghost" id="dataViewerBtn" title="記録閲覧"><span style="font-size:16px;">📊</span> 記録一覧</button>
+        <button class="btn ghost" id="settingsBtn" title="設定"><span style="font-size:16px;">⚙️</span> シート連携</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 生徒情報入力カード -->
+  <div class="card user-info-card" id="userInfoCard">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+      <h3 style="font-size:16px;">👤 生徒情報（記録用）</h3>
+      <span class="sub" id="gasStatusBadge"><span class="status-badge ok">スプレッドシート連携中</span></span>
+    </div>
+    <form id="userInfoForm" class="user-form-grid" onsubmit="return false;">
+      <div class="field-group">
+        <label for="topGrade">学年 <span class="req">*</span></label>
+        <select id="topGrade" class="input-field">
+          <option value="">選択</option>
+          <option value="1">1年</option>
+          <option value="2">2年</option>
+          <option value="3">3年</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="topClass">組 <span class="req">*</span></label>
+        <select id="topClass" class="input-field">
+          <option value="">選択</option>
+          <option value="1">1組</option>
+          <option value="2">2組</option>
+          <option value="3">3組</option>
+          <option value="4">4組</option>
+          <option value="5">5組</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="topNum">出席番号 <span class="req">*</span></label>
+        <select id="topNum" class="input-field">
+          <option value="">選択</option>
+        </select>
+      </div>
+      <div class="field-group name-group">
+        <label for="topName">氏名 <span class="req">*</span></label>
+        <input type="text" id="topName" placeholder="例: 山田 太郎" class="input-field" autocomplete="off">
+      </div>
+    </form>
+    <div id="userInfoWarn" class="user-info-warn"></div>
+  </div>
+
+  <!-- ガイドセクション -->
+  <section id="guide">
+    <div class="sec-head"><h2>解き方の4ステップ</h2><span class="sub">グラフを利用する方法</span></div>
+    <ol class="guide-steps">
+      <li><div><b>判別式</b> <span class="mathvar">D</span> = <span class="mathvar">b</span>² − 4<span class="mathvar">ac</span> の符号を調べ、実数解の個数を確認する。</div></li>
+      <li><div><b>方程式</b> <span class="mathvar">ax</span>² + <span class="mathvar">bx</span> + <span class="mathvar">c</span> = 0 を因数分解または解の公式で解き、解を求める（<span class="mathvar">D</span> &lt; 0 なら実数解なし）。</div></li>
+      <li><div><b>グラフの概形</b>を描く。<span class="mathvar">a</span> &gt; 0 なら下に凸、<span class="mathvar">a</span> &lt; 0 なら上に凸。</div></li>
+      <li><div>グラフが<b>x軸より上・下どちらにあるか</b>を、与えられた不等号の向きと照らし合わせて解を読み取る。</div></li>
+    </ol>
+
+    <div class="sec-head"><h2>判別式による3つの場合</h2><span class="sub">例：<span class="mathvar">a</span> &gt; 0（下に凸）のとき</span></div>
+    <div class="case-grid" id="caseGrid"></div>
+  </section>
+
+  <!-- 演習セクション -->
+  <section id="practice">
+    <div class="sec-head">
+      <h2>演習</h2>
+      <span class="sub">選択肢から正しい解を選ぼう</span>
+    </div>
+
+    <div class="practice-grid">
+      <div class="card problem-card">
+        <div class="mode-row">
+          <div class="difficulty" id="modeGroup" role="group" aria-label="モード">
+            <button data-m="practice" aria-pressed="true">練習モード</button>
+            <button data-m="challenge" aria-pressed="false">挑戦モード・10問</button>
+          </div>
+          <div class="challenge-info" id="challengeInfo" style="display:none;"></div>
+        </div>
+
+        <div class="problem-top">
+          <div class="difficulty" id="diffGroup" role="group" aria-label="難易度">
+            <button data-d="easy" aria-pressed="true" title="整数の解のみ">やさしい</button>
+            <button data-d="medium" aria-pressed="false" title="整数・分数の解">ふつう</button>
+            <button data-d="hard" aria-pressed="false" title="整数・分数・無理数（√）の解">むずかしい</button>
+          </div>
+          <button class="btn" id="newProblemBtn">新しい問題 ↻</button>
+        </div>
+
+        <div id="problemBody">
+          <div class="equation tab" id="equationText"></div>
+
+          <div class="graph-wrap">
+            <div class="cap">y = f(x) のグラフ</div>
+            <div id="graphHost"></div>
+          </div>
+
+          <details class="hint" id="hintBox">
+            <summary>解き方のヒントを見る</summary>
+            <ol class="steps" id="stepsList"></ol>
+          </details>
+        </div>
+
+        <div id="resultView" class="result-view" style="display:none;"></div>
+      </div>
+
+      <div class="card answer-card" id="answerCard">
+        <h2>この不等式の解はどれ？</h2>
+        <div class="sub">数直線の塗られた部分が、その選択肢の表す解の範囲です。</div>
+        <div class="options" id="optionsHost"></div>
+
+        <div class="feedback" id="feedback">
+          <div class="head" id="fbHead"></div>
+          <div class="fline" id="fbLine"></div>
+        </div>
+        <div class="next-row">
+          <button class="btn primary" id="nextBtn" style="display:none;">次の問題 →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>解答の判定はブラウザ内で行われ、集計記録は連携したスプレッドシートへ送信されます。</footer>
+</div>
+
+<!-- 設定モーダル -->
+<div class="modal-overlay" id="settingsModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>⚙️ スプレッドシート連携設定</h3>
+      <button class="btn ghost" id="closeSettingsBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label style="font-weight:700; display:block; margin-bottom:6px; font-size:13.5px;">Google Apps Script (GAS) Web API URL</label>
+        <div style="display:flex; gap:8px;">
+          <input type="url" id="gasUrlInput" class="input-field" placeholder="https://script.google.com/macros/s/.../exec">
+          <button class="btn primary" id="saveGasUrlBtn" style="white-space:nowrap;">保存</button>
+        </div>
+        <p style="font-size:12px; color:var(--ink-soft); margin-top:4px;">GASから「ウェブアプリとしてデプロイ」したURLを設定してください。</p>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; background:var(--paper); padding:10px 14px; border-radius:8px;">
+        <input type="checkbox" id="sendPracticeToggle" checked style="width:16px; height:16px; cursor:pointer;">
+        <label for="sendPracticeToggle" style="font-size:13.5px; font-weight:700; cursor:pointer;">練習モードの解答結果も1問ごとに送信する</label>
+      </div>
+
+      <div>
+        <button class="btn" id="testSendBtn">🧪 テスト送信してみる</button>
+        <span id="testSendResult" style="font-size:13px; margin-left:8px;"></span>
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--line); margin:4px 0;">
+
+      <div>
+        <p style="font-weight:700; margin-bottom:6px; font-size:14px;">Google Apps Script (GAS) 用のコード例</p>
+        <p style="font-size:12px; color:var(--ink-soft); margin-bottom:8px;">
+          スプレッドシートの「拡張機能」＞「Apps Script」に以下のコードを貼り付け、<b>「デプロイ」＞「新しいデプロイ」</b>を選択して「全員 (Anyone)」に公開してください。<br>
+          <span style="color:var(--bad); font-weight:700;">※ コードを変更・追記した後は、必ず「新しいデプロイ」を作成してください（バージョンを更新しないと最新のコードが反映されません）。</span>
+        </p>
+        <div class="code-block" id="gasCodeSnippet">function doGet(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = sheet.getDataRange().getValues();
+    var result = JSON.stringify({status: 'success', data: data});
+    
+    // JSONP対応 (CORS制限回避用)
+    if (e && e.parameter && e.parameter.callback) {
+      return ContentService.createTextOutput(e.parameter.callback + '(' + result + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    
+    return ContentService.createTextOutput(result)
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    var errResult = JSON.stringify({status: 'error', message: err.toString()});
+    if (e && e.parameter && e.parameter.callback) {
+      return ContentService.createTextOutput(e.parameter.callback + '(' + errResult + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(errResult)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var p = e.parameter || {};
+    
+    if (e.postData && e.postData.contents) {
+      try {
+        var json = JSON.parse(e.postData.contents);
+        for (var k in json) { p[k] = json[k]; }
+      } catch (err) {}
+    }
+    
+    var name = p.name || p.userName || p['氏名'] || '';
+    var grade = p.grade || p['学年'] || '';
+    var classGroup = p.classGroup || p['組'] || '';
+    var number = p.number || p.num || p['出席番号'] || '';
+    
+    sheet.appendRow([
+      p.timestamp || new Date().toLocaleString('ja-JP'),
+      grade,
+      classGroup,
+      number,
+      name,
+      p.mode || '',
+      p.score !== undefined ? p.score : 0,
+      p.total !== undefined ? p.total : 0,
+      p.streak !== undefined ? p.streak : 0
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({status: 'success'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</div>
+        <button class="btn ghost" id="copyGasCodeBtn" style="margin-top:8px;">📋 コードをコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 記録閲覧モーダル -->
+<div class="modal-overlay" id="dataViewerModal" style="display:none;">
+  <div class="modal" style="max-width:880px;">
+    <div class="modal-head">
+      <h3>📊 保存済み解答記録・集計</h3>
+      <button class="btn ghost" id="closeDataViewerBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:var(--paper); padding:12px; border-radius:10px; border:1px solid var(--line);">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <label style="font-weight:700; font-size:13px;">学年:</label>
+          <select id="filterGrade" class="input-field" style="width:auto; padding:6px 10px;">
+            <option value="">すべて</option>
+            <option value="1">1年</option>
+            <option value="2">2年</option>
+            <option value="3">3年</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <label style="font-weight:700; font-size:13px;">組:</label>
+          <select id="filterClass" class="input-field" style="width:auto; padding:6px 10px;">
+            <option value="">すべて</option>
+            <option value="1">1組</option>
+            <option value="2">2組</option>
+            <option value="3">3組</option>
+            <option value="4">4組</option>
+            <option value="5">5組</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <label style="font-weight:700; font-size:13px;">モード:</label>
+          <select id="filterMode" class="input-field" style="width:auto; padding:6px 10px;">
+            <option value="">すべて</option>
+            <option value="挑戦">挑戦モードのみ</option>
+            <option value="練習">練習モードのみ</option>
+          </select>
+        </div>
+        <button class="btn primary" id="fetchRecordsBtn" style="margin-left:auto; font-size:13px; padding:6px 14px;">🔄 データを読み込む</button>
+      </div>
+
+      <div id="viewerStatsSummary" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-top:4px;">
+        <div style="background:var(--paper); padding:10px; border-radius:8px; text-align:center;">
+          <div style="font-size:11px; color:var(--ink-soft);">総データ件数</div>
+          <div style="font-size:20px; font-weight:700;" id="sumCount">-</div>
+        </div>
+        <div style="background:var(--paper); padding:10px; border-radius:8px; text-align:center;">
+          <div style="font-size:11px; color:var(--ink-soft);">平均スコア</div>
+          <div style="font-size:20px; font-weight:700; color:var(--accent);" id="sumAvg">-</div>
+        </div>
+        <div style="background:var(--paper); padding:10px; border-radius:8px; text-align:center;">
+          <div style="font-size:11px; color:var(--ink-soft);">最高スコア</div>
+          <div style="font-size:20px; font-weight:700; color:var(--good);" id="sumMax">-</div>
+        </div>
+      </div>
+
+      <div id="recordsTableHost" style="overflow-x:auto; max-height:380px; margin-top:8px; border:1px solid var(--line); border-radius:8px;">
+        <p style="padding:20px; text-align:center; color:var(--ink-soft); margin:0;">「データを読み込む」ボタンを押すとスプレッドシートから最新の成績一覧を取得します。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const storage = {
+    get: function(key, def) {
+      try {
+        const val = localStorage.getItem(key);
+        return val !== null ? val : (def || '');
+      } catch (e) { return def || ''; }
+    },
+    set: function(key, val) {
+      try { localStorage.setItem(key, val); } catch (e) {}
+    }
+  };
+
+  const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzKx7vLPH3LKTdgL8VHJWA2NgepWaiMDohwpGm7Z3onzHA0fpeuhvnlr0P61nd8cfSa/exec';
+  let gasUrl = storage.get('quadIneqGasUrl', DEFAULT_GAS_URL);
+
+  const topGradeEl = document.getElementById('topGrade');
+  const topClassEl = document.getElementById('topClass');
+  const topNumEl = document.getElementById('topNum');
+  const topNameEl = document.getElementById('topName');
+  const userInfoWarnEl = document.getElementById('userInfoWarn');
+
+  // Populate student numbers 1..45
+  if (topNumEl && topNumEl.options.length <= 1) {
+    for (let i = 1; i <= 45; i++) {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = i + '番';
+      topNumEl.appendChild(opt);
+    }
+  }
+
+  // Restore saved student values
+  if (topGradeEl) topGradeEl.value = storage.get('quadIneqUserGrade', '');
+  if (topClassEl) topClassEl.value = storage.get('quadIneqUserClass', '');
+  if (topNumEl) topNumEl.value = storage.get('quadIneqUserNum', '');
+  if (topNameEl) topNameEl.value = storage.get('quadIneqUserName', '');
+
+  [topGradeEl, topClassEl, topNumEl, topNameEl].forEach(function(el) {
+    if (!el) return;
+    el.addEventListener('change', saveUserInfoToStorage);
+    el.addEventListener('input', saveUserInfoToStorage);
+  });
+
+  function saveUserInfoToStorage() {
+    if (topGradeEl) storage.set('quadIneqUserGrade', topGradeEl.value);
+    if (topClassEl) storage.set('quadIneqUserClass', topClassEl.value);
+    if (topNumEl) storage.set('quadIneqUserNum', topNumEl.value);
+    if (topNameEl) storage.set('quadIneqUserName', topNameEl.value);
+    validateUserInfo(false);
+  }
+
+  function getUserInfo() {
+    return {
+      grade: topGradeEl ? topGradeEl.value : '',
+      classGroup: topClassEl ? topClassEl.value : '',
+      num: topNumEl ? topNumEl.value : '',
+      name: topNameEl ? topNameEl.value.trim() : ''
+    };
+  }
+
+  function validateUserInfo(showAlert) {
+    const info = getUserInfo();
+    const missing = [];
+    if (!info.grade) missing.push('学年');
+    if (!info.classGroup) missing.push('組');
+    if (!info.num) missing.push('出席番号');
+    if (!info.name) missing.push('氏名');
+
+    [topGradeEl, topClassEl, topNumEl, topNameEl].forEach(function(el) {
+      if (el) el.classList.remove('input-err');
+    });
+
+    if (missing.length > 0) {
+      if (!info.grade && topGradeEl) topGradeEl.classList.add('input-err');
+      if (!info.classGroup && topClassEl) topClassEl.classList.add('input-err');
+      if (!info.num && topNumEl) topNumEl.classList.add('input-err');
+      if (!info.name && topNameEl) topNameEl.classList.add('input-err');
+
+      if (showAlert && userInfoWarnEl) {
+        userInfoWarnEl.style.display = 'block';
+        userInfoWarnEl.textContent = '⚠️ 生徒情報を入力してください（未入力: ' + missing.join(', ') + '）';
+        const userCard = document.getElementById('userInfoCard');
+        if (userCard) userCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return false;
+    }
+
+    if (userInfoWarnEl) userInfoWarnEl.style.display = 'none';
+    return true;
+  }
+
+  const MINUS = '−';
+  function fmt(n) { return n < 0 ? MINUS + Math.abs(n) : String(n); }
+
+  function formatQuadratic(a,b,c,rel){
+    let s = a===-1? MINUS+'x²' : a===1? 'x²' : fmt(a)+'x²';
+    if(b!==0){
+      s += (b>0? ' + ' : ' '+MINUS+' ');
+      const ab = Math.abs(b);
+      s += (ab===1? 'x' : ab+'x');
+    }
+    if(c!==0){
+      s += (c>0? ' + ' : ' '+MINUS+' ') + Math.abs(c);
+    }
+    const relMap = {'>':'>','<':'<','>=':'≥','<=':'≤'};
+    return s + ' ' + relMap[rel] + ' 0';
+  }
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function weightedChoice(items){
+    const total = items.reduce(function(s,i){ return s+i.w; },0);
+    let r = Math.random()*total;
+    for(let i=0; i<items.length; i++){
+      if(r < items[i].w) return items[i].k;
+      r -= items[i].w;
+    }
+    return items[items.length-1].k;
+  }
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function gcd(x,y){ x=Math.abs(x); y=Math.abs(y); while(y){ const t=x%y; x=y; y=t; } return x || 1; }
+  function isPerfectSquare(n){ const r = Math.round(Math.sqrt(n)); return r*r===n; }
+  function simplifySurd(D){
+    let k = Math.floor(Math.sqrt(D));
+    while(k>1){ if(D % (k*k) === 0) return {k:k, n:D/(k*k)}; k--; }
+    return {k:1, n:D};
+  }
+
+  function fracLabel(f){ return (f.p<0? MINUS+Math.abs(f.p) : String(f.p)) + '/' + f.q; }
+  function fracFactorTerm(f){
+    const qPart = f.q===1 ? '' : String(f.q);
+    const sign = f.p>0 ? ` ${MINUS} ` : ' + ';
+    return `${qPart}x${sign}${Math.abs(f.p)}`;
+  }
+  function surdTermLabel(Q,n){ return (Q===1? '' : String(Q)) + '√' + n; }
+  function surdBranch(P,Q,n,sign){
+    const term = surdTermLabel(Q,n);
+    const Pstr = P<0 ? MINUS+Math.abs(P) : String(P);
+    if(P===0) return sign<0 ? `${MINUS}${term}` : term;
+    return sign<0 ? `${Pstr} ${MINUS} ${term}` : `${Pstr} + ${term}`;
+  }
+  function surdLabel(s, which){
+    const branch = surdBranch(s.P, s.Q, s.n, which==='minus'?-1:1);
+    return s.R===1 ? branch : `(${branch})/${s.R}`;
+  }
+  function getRootFormatter(p){
+    if(p && p.rootForm==='frac'){
+      return function(val){ return val===p.r1 ? fracLabel(p.frac1) : fracLabel(p.frac2); };
+    }
+    if(p && p.rootForm==='surd'){
+      return function(val){ return val===p.r1 ? surdLabel(p.surd,'minus') : surdLabel(p.surd,'plus'); };
+    }
+    return fmt;
+  }
+
+  function classify(a, discCase, roots, rel){
+    const pos = a > 0;
+    const isGreater = (rel==='>'||rel==='>=');
+    const closed = (rel==='>='||rel==='<=');
+    if(discCase==='two'){
+      const kind = (pos===isGreater) ? 'outside' : 'between';
+      return {kind:kind, r1:roots.r1, r2:roots.r2, closed:closed};
+    }
+    if(discCase==='double'){
+      const r = roots.r;
+      if(pos){
+        if(rel==='>') return {kind:'except', r:r};
+        if(rel==='>=') return {kind:'all'};
+        if(rel==='<') return {kind:'none'};
+        return {kind:'point', r:r};
+      } else {
+        if(rel==='>') return {kind:'none'};
+        if(rel==='>=') return {kind:'point', r:r};
+        if(rel==='<') return {kind:'except', r:r};
+        return {kind:'all'};
+      }
+    }
+    if(pos) return isGreater ? {kind:'all'} : {kind:'none'};
+    return (!isGreater) ? {kind:'all'} : {kind:'none'};
+  }
+
+  function sameAnswer(x,y){
+    return x.kind===y.kind && x.r1===y.r1 && x.r2===y.r2 && x.r===y.r && !!x.closed===!!y.closed;
+  }
+
+  function buildOptions(correct, discCase, roots){
+    let pool;
+    if(discCase==='two'){
+      const r1 = roots.r1, r2 = roots.r2;
+      pool = [
+        {kind:'outside',r1:r1,r2:r2,closed:true},{kind:'outside',r1:r1,r2:r2,closed:false},
+        {kind:'between',r1:r1,r2:r2,closed:true},{kind:'between',r1:r1,r2:r2,closed:false}
+      ];
+    } else if(discCase==='double'){
+      const r = roots.r;
+      pool = [{kind:'all'},{kind:'none'},{kind:'point',r:r},{kind:'except',r:r}];
+    } else {
+      const h = roots.h;
+      pool = [{kind:'all'},{kind:'none'},
+        {kind:'outside',r1:h-1,r2:h+1,closed:false},
+        {kind:'between',r1:h-1,r2:h+1,closed:false}];
+    }
+    const distractors = pool.filter(function(p){ return !sameAnswer(p,correct); });
+    return shuffle([correct].concat(distractors));
+  }
+
+  function labelFor(ans, fmtRoot){
+    const f = fmtRoot || fmt;
+    switch(ans.kind){
+      case 'outside': { const op = ans.closed?'≤':'<'; return `x ${op} ${f(ans.r1)}, ${f(ans.r2)} ${op} x`; }
+      case 'between': { const op = ans.closed?'≤':'<'; return `${f(ans.r1)} ${op} x ${op} ${f(ans.r2)}`; }
+      case 'all': return 'すべての実数';
+      case 'none': return '解なし';
+      case 'point': return `x = ${f(ans.r)}`;
+      case 'except': return `x ≠ ${f(ans.r)}`;
+    }
+  }
+
+  function randFracRoot(){
+    for(;;){
+      const q = choice([2,3,4]);
+      const p = randInt(-3*q, 3*q);
+      if(p===0) continue;
+      if(gcd(Math.abs(p), q) !== 1) continue;
+      return {p:p, q:q};
+    }
+  }
+
+  function generateFracRoots(){
+    let f1 = randFracRoot(), f2 = randFracRoot(), tries=0;
+    while(f1.p/f1.q === f2.p/f2.q && tries<20){ f2 = randFracRoot(); tries++; }
+    let v1 = f1.p/f1.q, v2 = f2.p/f2.q;
+    if(v1 > v2){ const tf=f1; f1=f2; f2=tf; const tv=v1; v1=v2; v2=tv; }
+    const aSign = choice([1,-1]);
+    const a = aSign * f1.q * f2.q;
+    const b = -aSign * (f1.p*f2.q + f2.p*f1.q);
+    const c = aSign * f1.p * f2.p;
+    return {a:a,b:b,c:c,r1:v1,r2:v2,frac1:f1,frac2:f2};
+  }
+
+  function generateSurdCase(){
+    const aChoicesSurd = [1,-1,2,-2];
+    for(let tries=0; tries<100; tries++){
+      const a = choice(aChoicesSurd);
+      const b = randInt(-6,6);
+      const c = randInt(-6,6);
+      const D = b*b - 4*a*c;
+      if(D>0 && !isPerfectSquare(D)){
+        const surdRes = simplifySurd(D);
+        const k = surdRes.k, n = surdRes.n;
+        const g = gcd(gcd(Math.abs(b),k), Math.abs(2*a));
+        const Q = k/g;
+        const R = Math.abs(2*a)/g;
+        const P = (a>0 ? -b : b)/g;
+        const r1v = (P - Q*Math.sqrt(n))/R;
+        const r2v = (P + Q*Math.sqrt(n))/R;
+        return {a:a,b:b,c:c,r1:r1v,r2:r2v,surd:{P:P,Q:Q,R:R,n:n}};
+      }
+    }
+    return {a:1,b:-2,c:-1,r1:1-Math.sqrt(2),r2:1+Math.sqrt(2),surd:{P:1,Q:1,R:1,n:2}};
+  }
+
+  function generateProblem(diff){
+    let aChoices, weights, formWeights;
+    if(diff==='easy'){
+      aChoices=[1]; weights=[{k:'two',w:0.6},{k:'double',w:0.2},{k:'none',w:0.2}];
+      formWeights=[{k:'int',w:1}];
+    } else if(diff==='medium'){
+      aChoices=[1,-1]; weights=[{k:'two',w:0.45},{k:'double',w:0.25},{k:'none',w:0.3}];
+      formWeights=[{k:'int',w:0.55},{k:'frac',w:0.45}];
+    } else {
+      aChoices=[1,-1,2,-2,3,-3]; weights=[{k:'two',w:0.4},{k:'double',w:0.3},{k:'none',w:0.3}];
+      formWeights=[{k:'int',w:0.34},{k:'frac',w:0.33},{k:'surd',w:0.33}];
+    }
+
+    const discCase = weightedChoice(weights);
+    let a,b,c;
+    let r1=null,r2=null,r=null,h=null,q=null;
+    let rootForm='int', frac1=null, frac2=null, surd=null;
+
+    if(discCase==='two'){
+      rootForm = weightedChoice(formWeights);
+      if(rootForm==='int'){
+        a = choice(aChoices);
+        r1 = randInt(-6,3);
+        let r2c = r1 + randInt(1,6);
+        if(r2c > 6){ const shift = r2c-6; r1 -= shift; r2c -= shift; }
+        r2 = r2c;
+        b = -a*(r1+r2); c = a*r1*r2;
+      } else if(rootForm==='frac'){
+        const fr = generateFracRoots();
+        a=fr.a; b=fr.b; c=fr.c; r1=fr.r1; r2=fr.r2; frac1=fr.frac1; frac2=fr.frac2;
+      } else {
+        const sr = generateSurdCase();
+        a=sr.a; b=sr.b; c=sr.c; r1=sr.r1; r2=sr.r2; surd=sr.surd;
+      }
+    } else if(discCase==='double'){
+      a = choice(aChoices);
+      r = randInt(-5,5);
+      b = -2*a*r; c = a*r*r;
+    } else {
+      a = choice(aChoices);
+      h = randInt(-4,4);
+      const qAbs = randInt(1,3);
+      q = a>0 ? qAbs : -qAbs;
+      b = -2*a*h; c = a*h*h+q;
+    }
+
+    const rel = choice(['>','<','>=','<=']);
+    const correctAnswer = classify(a, discCase, {r1:r1,r2:r2,r:r,h:h}, rel);
+    const options = buildOptions(correctAnswer, discCase, {r1:r1,r2:r2,r:r,h:h});
+    return {a:a,b:b,c:c,rel:rel,discCase:discCase,r1:r1,r2:r2,r:r,h:h,q:q,rootForm:rootForm,frac1:frac1,frac2:frac2,surd:surd,correctAnswer:correctAnswer,options:options};
+  }
+
+  function miniNumberLine(ans, keyColorVar, fmtRoot){
+    const f = fmtRoot || fmt;
+    let lo, hi;
+    if(ans.r1!=null && ans.r2!=null){ lo = ans.r1-2; hi = ans.r2+2; }
+    else if(ans.r!=null){ lo = ans.r-3; hi = ans.r+3; }
+    else { lo = -4; hi = 4; }
+    const W=200,H=52,M=16,axisY=26;
+    const mapX = function(x){ return M + (x-lo)/(hi-lo)*(W-2*M); };
+    let bars='', dots='', labels='';
+    const color = `var(${keyColorVar||'--accent'})`;
+
+    function bar(x1,x2){ bars += `<line x1="${mapX(x1)}" y1="${axisY}" x2="${mapX(x2)}" y2="${axisY}" stroke="${color}" stroke-width="5" stroke-linecap="round"/>`; }
+    function dot(x,filled){
+      dots += `<circle cx="${mapX(x)}" cy="${axisY}" r="5" fill="${filled?color:'var(--paper-raised)'}" stroke="${color}" stroke-width="2.5"/>`;
+    }
+    function label(x){ labels += `<text x="${mapX(x)}" y="${axisY+18}" text-anchor="middle" font-size="10.5" class="tab" fill="var(--ink-soft)">${f(x)}</text>`; }
+
+    if(ans.kind==='outside'){
+      bar(lo, ans.r1); bar(ans.r2, hi);
+      dot(ans.r1, ans.closed); dot(ans.r2, ans.closed);
+      label(ans.r1); label(ans.r2);
+    } else if(ans.kind==='between'){
+      bar(ans.r1, ans.r2);
+      dot(ans.r1, ans.closed); dot(ans.r2, ans.closed);
+      label(ans.r1); label(ans.r2);
+    } else if(ans.kind==='all'){
+      bar(lo,hi);
+    } else if(ans.kind==='none'){
+      // no shading
+    } else if(ans.kind==='point'){
+      dot(ans.r, true); label(ans.r);
+    } else if(ans.kind==='except'){
+      bar(lo, ans.r); bar(ans.r, hi); dot(ans.r, false); label(ans.r);
+    }
+
+    return `<svg class="graph" viewBox="0 0 ${W} ${H}" role="img" aria-label="${labelFor(ans, f)}">
+      <line x1="${M}" y1="${axisY}" x2="${W-M}" y2="${axisY}" stroke="var(--line)" stroke-width="2"/>
+      ${bars}${dots}${labels}
+      ${ans.kind==='none'? `<text x="${W/2}" y="${axisY+4}" text-anchor="middle" font-size="11" fill="var(--ink-soft)">&#9587;</text>`:''}
+    </svg>`;
+  }
+
+  function drawMainGraph(p){
+    const XMIN=-7, XMAX=7;
+    const f = function(x){ return p.a*x*x + p.b*x + p.c; };
+    let yMin=0, yMax=0;
+    for(let x=XMIN; x<=XMAX; x+=0.2){ const y=f(x); if(y<yMin)yMin=y; if(y>yMax)yMax=y; }
+    
+    // Generous vertical margin for D < 0 (no real roots) to visually separate from x-axis
+    const range = (yMax-yMin) || 1;
+    if(p.discCase === 'none'){
+      if(p.a > 0){
+        yMin = -Math.max(3, Math.abs(p.q || 2) * 1.2);
+        yMax += range * 0.25;
+      } else {
+        yMax = Math.max(3, Math.abs(p.q || 2) * 1.2);
+        yMin -= range * 0.25;
+      }
+    } else {
+      yMin -= range*0.14; yMax += range*0.14;
+    }
+
+    const W=380, H=230, M=26;
+    const mapX = function(x){ return M + (x-XMIN)/(XMAX-XMIN)*(W-2*M); };
+    const mapY = function(y){ return M + (yMax-y)/(yMax-yMin)*(H-2*M); };
+
+    let bounds;
+    if(p.discCase==='two') bounds=[XMIN,p.r1,p.r2,XMAX];
+    else if(p.discCase==='double') bounds=[XMIN,p.r,XMAX];
+    else bounds=[XMIN,XMAX];
+
+    let fills='';
+    for(let i=0;i<bounds.length-1;i++){
+      const xl=bounds[i], xr=bounds[i+1];
+      if(xr-xl < 1e-6) continue;
+      const mid=(xl+xr)/2;
+      const positive = f(mid) > 0;
+      const N=16; let pts='';
+      for(let k=0;k<=N;k++){ const x=xl+(xr-xl)*k/N; pts += `${mapX(x)},${mapY(f(x))} `; }
+      pts += `${mapX(xr)},${mapY(0)} ${mapX(xl)},${mapY(0)}`;
+      fills += `<polygon points="${pts}" fill="${positive? 'var(--accent)':'var(--accent-warm)'}" fill-opacity="0.16"/>`;
+    }
+
+    let curve='';
+    for(let x=XMIN; x<=XMAX+1e-9; x+=0.15){ curve += `${mapX(x)},${mapY(f(x))} `; }
+
+    let ticks='';
+    for(let x=Math.ceil(XMIN); x<=Math.floor(XMAX); x++){
+      ticks += `<line x1="${mapX(x)}" y1="${mapY(0)-3}" x2="${mapX(x)}" y2="${mapY(0)+3}" stroke="var(--ink-soft)" stroke-width="1"/>`;
+    }
+
+    const fmtRoot = getRootFormatter(p);
+    let roots='';
+    function rootMark(x){
+      const label = fmtRoot(x);
+      const fs = label.length > 5 ? 10.5 : 12;
+      roots += `<line x1="${mapX(x)}" y1="${mapY(0)}" x2="${mapX(x)}" y2="${mapY(f(x))}" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="2,3"/>
+        <circle cx="${mapX(x)}" cy="${mapY(0)}" r="4.5" fill="var(--ink)" stroke="var(--paper-raised)" stroke-width="2"/>
+        <text x="${mapX(x)}" y="${mapY(0)+20}" text-anchor="middle" font-size="${fs}" class="tab" fill="var(--ink)">${label}</text>`;
+    }
+    if(p.discCase==='two'){ rootMark(p.r1); rootMark(p.r2); }
+    else if(p.discCase==='double'){ rootMark(p.r); }
+
+    return `<svg class="graph" viewBox="0 0 ${W} ${H}" role="img" aria-label="放物線のグラフ">
+      <line x1="${mapX(0)}" y1="${M-6}" x2="${mapX(0)}" y2="${H-M+6}" stroke="var(--line)" stroke-width="1"/>
+      ${fills}
+      <line x1="${mapX(XMIN)}" y1="${mapY(0)}" x2="${mapX(XMAX)}" y2="${mapY(0)}" stroke="var(--ink-soft)" stroke-width="1.5"/>
+      ${ticks}
+      <polyline points="${curve}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${roots}
+    </svg>`;
+  }
+
+  function factorTerm(r){ return r >= 0 ? `x ${MINUS} ${r}` : `x + ${-r}`; }
+
+  function stepsHtml(p){
+    const D = p.b*p.b - 4*p.a*p.c;
+    const items = [];
+    items.push(`<span class="calc">判別式：</span><span class="mathvar">D</span> = <span class="mathvar">b</span>² − 4<span class="mathvar">ac</span> = ${p.b}² − 4×(${fmt(p.a)})×(${fmt(p.c)}) = <b class="tab">${fmt(D)}</b>`);
+    if(p.discCase==='two'){
+      if(p.rootForm==='frac'){
+        const signPrefix = p.a<0 ? MINUS : '';
+        items.push(`因数分解すると ${signPrefix}(${fracFactorTerm(p.frac1)})(${fracFactorTerm(p.frac2)}) = 0 より <b>x = ${fracLabel(p.frac1)}, ${fracLabel(p.frac2)}</b>`);
+      } else if(p.rootForm==='surd'){
+        items.push(`<span class="mathvar">D</span> = ${fmt(D)} は平方数ではないので、解の公式を使う。<span class="mathvar">x</span> = (${MINUS}<span class="mathvar">b</span> ± √<span class="mathvar">D</span>)/(2<span class="mathvar">a</span>) = (${fmt(-p.b)} ± √${fmt(D)})/(${fmt(2*p.a)}) より <b>x = ${surdLabel(p.surd,'minus')}, ${surdLabel(p.surd,'plus')}</b>`);
+      } else {
+        const acoef = p.a===1?'':p.a===-1?MINUS:fmt(p.a);
+        items.push(`因数分解すると ${acoef}(${factorTerm(p.r1)})(${factorTerm(p.r2)}) = 0 より <b>x = ${fmt(p.r1)}, ${fmt(p.r2)}</b>`);
+      }
+    } else if(p.discCase==='double'){
+      const acoef = p.a===1?'':p.a===-1?MINUS:fmt(p.a);
+      items.push(`${acoef}(${factorTerm(p.r)})² = 0 より <b>x = ${fmt(p.r)}</b>（重解）`);
+    } else {
+      items.push(`<span class="mathvar">D</span> &lt; 0 なので、<b>実数解を持たない</b>（グラフはx軸と交わらない）`);
+    }
+    items.push(`<span class="mathvar">a</span> ${p.a>0? '> 0 なので<b>下に凸</b>':'< 0 なので<b>上に凸</b>'} のグラフになる。`);
+    items.push(`不等号 「${({'>':'>','<':'<','>=':'≥','<=':'≤'})[p.rel]}」 の向きに合うx軸との位置関係を読み取ると、解は <b>${labelFor(p.correctAnswer, getRootFormatter(p))}</b>。`);
+    return items.map(function(t){ return `<li>${t}</li>`; }).join('');
+  }
+
+  // Guide static examples
+  const guideCases = [
+    { title:'D > 0', tag:'異なる2つの実数解', p:{a:1,b:1,c:-2,rel:'>',discCase:'two',r1:-2,r2:1,correctAnswer:{kind:'outside',r1:-2,r2:1,closed:false}}, note:'x² + x − 2 > 0 → x < −2, 1 < x' },
+    { title:'D = 0', tag:'重解（1つの実数解）', p:{a:1,b:-4,c:4,rel:'>=',discCase:'double',r:2,correctAnswer:{kind:'all'}}, note:'x² − 4x + 4 ≥ 0 → すべての実数' },
+    { title:'D < 0', tag:'実数解なし', p:{a:1,b:1,c:1,rel:'>',discCase:'none',h:-0.5,q:0.75,correctAnswer:{kind:'all'}}, note:'x² + x + 1 > 0 → すべての実数' }
+  ];
+
+  const caseGridEl = document.getElementById('caseGrid');
+  if (caseGridEl) {
+    caseGridEl.innerHTML = guideCases.map(function(g) {
+      return `
+        <div class="card case-card">
+          <h3>${g.title}</h3>
+          <div class="tag">${g.tag}</div>
+          ${drawMainGraph(g.p)}
+          <div class="eq">${g.note}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  let difficulty = 'easy';
+  let current = null;
+  let answered = false;
+  let mode = 'practice';
+  let challenge = null;
+
+  const stats = (function(){
+    try {
+      const raw = localStorage.getItem('quadIneqLabStats');
+      if(raw) return JSON.parse(raw);
+    } catch(e){}
+    return {correct:0,total:0,streak:0};
+  })();
+
+  function saveStats(){
+    try { localStorage.setItem('quadIneqLabStats', JSON.stringify(stats)); } catch(e){}
+  }
+
+  let challengeBest = (function(){
+    try { return parseInt(localStorage.getItem('quadIneqLabChallengeBest')||'0',10) || 0; } catch(e){ return 0; }
+  })();
+
+  function saveBest(){
+    try { localStorage.setItem('quadIneqLabChallengeBest', String(challengeBest)); } catch(e){}
+  }
+
+  function renderStats(){
+    const elCorrect = document.getElementById('statCorrect');
+    const elTotal = document.getElementById('statTotal');
+    const elStreak = document.getElementById('statStreak');
+    const elBest = document.getElementById('statBest');
+
+    if (elCorrect) elCorrect.textContent = stats.correct || 0;
+    if (elTotal) elTotal.textContent = stats.total || 0;
+    if (elStreak) elStreak.textContent = stats.streak || 0;
+    if (elBest) elBest.textContent = challengeBest || 0;
+  }
+
+  function sendResultToSpreadsheet(modeName, diffName, scoreVal, totalVal) {
+    if (!validateUserInfo(true)) {
+      return false;
+    }
+    const info = getUserInfo();
+    const payload = new URLSearchParams();
+    payload.append('timestamp', new Date().toLocaleString('ja-JP'));
+    payload.append('grade', info.grade);
+    payload.append('classGroup', info.classGroup);
+    payload.append('number', info.num);
+    payload.append('name', info.name);
+    payload.append('userName', info.name);
+    payload.append('mode', `${modeName}(${diffName})`);
+    payload.append('score', scoreVal);
+    payload.append('total', totalVal);
+    payload.append('streak', stats.streak);
+
+    fetch(gasUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: payload.toString()
+    }).then(function() {
+      console.log('Data sent to GAS successfully');
+    }).catch(function(err) {
+      console.error('GAS send error:', err);
+    });
+    return true;
+  }
+
+  function updateModeUI(){
+    const isChallenge = mode==='challenge';
+    const newBtn = document.getElementById('newProblemBtn');
+    if (newBtn) newBtn.style.display = isChallenge ? 'none' : 'inline-block';
+    
+    document.querySelectorAll('#diffGroup button').forEach(function(b){
+      b.disabled = isChallenge;
+    });
+    
+    const info = document.getElementById('challengeInfo');
+    if(info){
+      if(isChallenge && challenge){
+        info.style.display = 'block';
+        info.textContent = `第 ${challenge.current} 問 / ${challenge.total} ・ 正解 ${challenge.score}`;
+      } else {
+        info.style.display = 'none';
+      }
+    }
+  }
+
+  function switchMode(m){
+    if (m === 'challenge' && !validateUserInfo(true)) {
+      return;
+    }
+    mode = m;
+    const buttons = document.querySelectorAll('#modeGroup button');
+    buttons.forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.m === m));
+    });
+
+    if(m==='challenge'){
+      challenge = {current:1, total:10, score:0};
+    } else {
+      challenge = null;
+    }
+    renderProblem();
+  }
+
+  function resultMessage(score,total){
+    const ratio = score/total;
+    if(ratio===1) return '満点！完璧です。';
+    if(ratio>=0.8) return 'とてもよくできました。';
+    if(ratio>=0.5) return 'もう少し。苦手なパターンを見直そう。';
+    return '基礎から復習してみよう。';
+  }
+
+  function renderChallengeResult(){
+    document.getElementById('problemBody').style.display = 'none';
+    document.getElementById('answerCard').style.display = 'none';
+    document.getElementById('newProblemBtn').style.display = 'none';
+    document.getElementById('challengeInfo').style.display = 'none';
+
+    const score = challenge.score, total = challenge.total;
+    if(score > challengeBest){ challengeBest = score; saveBest(); renderStats(); }
+
+    const diffMap = {easy:'やさしい', medium:'ふつう', hard:'むずかしい'};
+    sendResultToSpreadsheet('挑戦モード', diffMap[difficulty] || difficulty, score, total);
+
+    const rv = document.getElementById('resultView');
+    rv.style.display = 'block';
+    rv.innerHTML = `
+      <div class="result-score tab">${score}<span> / ${total}</span></div>
+      <p class="result-msg">${resultMessage(score,total)}</p>
+      <p class="result-best">自己ベスト：${challengeBest} / ${total}</p>
+      <div class="result-actions">
+        <button class="btn primary" id="retryChallengeBtn">もう一度挑戦する</button>
+        <button class="btn ghost" id="backPracticeBtn">練習モードに戻る</button>
+      </div>`;
+
+    document.getElementById('retryChallengeBtn').addEventListener('click', function(){ switchMode('challenge'); });
+    document.getElementById('backPracticeBtn').addEventListener('click', function(){ switchMode('practice'); });
+  }
+
+  function renderProblem(){
+    document.getElementById('problemBody').style.display = '';
+    document.getElementById('answerCard').style.display = '';
+    document.getElementById('resultView').style.display = 'none';
+    updateModeUI();
+
+    current = generateProblem(difficulty);
+    answered = false;
+    document.getElementById('equationText').innerHTML = formatQuadratic(current.a,current.b,current.c,current.rel);
+    document.getElementById('graphHost').innerHTML = drawMainGraph(current);
+    document.getElementById('stepsList').innerHTML = stepsHtml(current);
+    document.getElementById('hintBox').open = false;
+    document.getElementById('feedback').className = 'feedback';
+
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.style.display = 'none';
+    nextBtn.textContent = '次の問題 →';
+
+    const fmtRoot = getRootFormatter(current);
+    const host = document.getElementById('optionsHost');
+    host.innerHTML = '';
+    current.options.forEach(function(opt, idx) {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.innerHTML = miniNumberLine(opt, '--accent', fmtRoot) + `<span class="label">${labelFor(opt, fmtRoot)}</span>`;
+      btn.addEventListener('click', function(){ selectOption(idx); });
+      host.appendChild(btn);
+    });
+  }
+
+  function selectOption(idx){
+    if(answered) return;
+    answered = true;
+    const chosen = current.options[idx];
+    const isCorrect = sameAnswer(chosen, current.correctAnswer);
+
+    stats.total++;
+    if(isCorrect){ stats.correct++; stats.streak++; } else { stats.streak = 0; }
+    saveStats();
+
+    const diffMap = {easy:'やさしい', medium:'ふつう', hard:'むずかしい'};
+    if(mode==='challenge' && challenge){
+      if(isCorrect) challenge.score++;
+    } else if (mode==='practice') {
+      const sendToggle = document.getElementById('sendPracticeToggle');
+      if (sendToggle && sendToggle.checked) {
+        sendResultToSpreadsheet('練習モード', diffMap[difficulty] || difficulty, isCorrect ? 1 : 0, 1);
+      }
+    }
+
+    renderStats();
+    updateModeUI();
+
+    const buttons = document.querySelectorAll('#optionsHost .opt');
+    buttons.forEach(function(b,i) {
+      b.disabled = true;
+      if(sameAnswer(current.options[i], current.correctAnswer)) b.classList.add('correct');
+      else if(i===idx) b.classList.add('wrong');
+    });
+
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
+    document.getElementById('fbHead').textContent = isCorrect ? '正解！' : '不正解';
+    document.getElementById('fbLine').innerHTML = `正しい解は <b>${labelFor(current.correctAnswer, getRootFormatter(current))}</b> です。ヒントを開くと解き方を確認できます。`;
+    document.getElementById('hintBox').open = true;
+
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = (mode==='challenge' && challenge.current>=challenge.total) ? '結果を見る →' : '次の問題 →';
+    nextBtn.style.display = 'inline-block';
+  }
+
+  function handleNext(){
+    if(mode==='challenge' && challenge){
+      if(challenge.current >= challenge.total){
+        renderChallengeResult();
+        return;
+      }
+      challenge.current++;
+    }
+    renderProblem();
+  }
+
+  const settingsModal = document.getElementById('settingsModal');
+  const gasUrlInput = document.getElementById('gasUrlInput');
+  const testSendResult = document.getElementById('testSendResult');
+
+  document.getElementById('settingsBtn').addEventListener('click', function() {
+    gasUrlInput.value = gasUrl;
+    testSendResult.textContent = '';
+    settingsModal.style.display = 'flex';
+  });
+  document.getElementById('closeSettingsBtn').addEventListener('click', function() {
+    settingsModal.style.display = 'none';
+  });
+  document.getElementById('saveGasUrlBtn').addEventListener('click', function() {
+    gasUrl = gasUrlInput.value.trim();
+    storage.set('quadIneqGasUrl', gasUrl);
+    testSendResult.style.color = 'var(--good)';
+    testSendResult.textContent = '保存しました';
+  });
+
+  document.getElementById('copyGasCodeBtn').addEventListener('click', function() {
+    const code = document.getElementById('gasCodeSnippet').textContent;
+    const btn = this;
+    const originalText = btn.textContent;
+
+    function fallbackCopy() {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = code;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        btn.textContent = '✅ コピーしました！';
+        setTimeout(function() { btn.textContent = originalText; }, 2000);
+      } catch (err) {
+        btn.textContent = '❌ コピーに失敗しました';
+        setTimeout(function() { btn.textContent = originalText; }, 2000);
+      }
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function() {
+        btn.textContent = '✅ コピーしました！';
+        setTimeout(function() { btn.textContent = originalText; }, 2000);
+      }).catch(function() {
+        // Fallback when Clipboard API is blocked by iFrame permission policy
+        fallbackCopy();
+      });
+    } else {
+      fallbackCopy();
+    }
+  });
+
+  document.getElementById('testSendBtn').addEventListener('click', function() {
+    if (!gasUrl) {
+      testSendResult.style.color = 'var(--bad)';
+      testSendResult.textContent = 'URLが空です';
+      return;
+    }
+    testSendResult.style.color = 'var(--ink-soft)';
+    testSendResult.textContent = '送信中...';
+    const ok = sendResultToSpreadsheet('テスト送信', '普通', 10, 10);
+    if (ok) {
+      testSendResult.style.color = 'var(--good)';
+      testSendResult.textContent = '送信完了（シートを確認してください）';
+    } else {
+      testSendResult.style.color = 'var(--bad)';
+      testSendResult.textContent = '生徒情報を入力してください';
+    }
+  });
+
+  // Data Viewer modal & filters
+  const dataViewerModal = document.getElementById('dataViewerModal');
+  let rawSheetRecords = [];
+
+  document.getElementById('dataViewerBtn').addEventListener('click', function() {
+    dataViewerModal.style.display = 'flex';
+    if (rawSheetRecords.length === 0) {
+      loadRecordsFromGAS();
+    }
+  });
+  document.getElementById('closeDataViewerBtn').addEventListener('click', function() {
+    dataViewerModal.style.display = 'none';
+  });
+  document.getElementById('fetchRecordsBtn').addEventListener('click', loadRecordsFromGAS);
+
+  ['filterGrade', 'filterClass', 'filterMode'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', renderFilteredRecords);
+  });
+
+  function loadRecordsFromGAS() {
+    const tableHost = document.getElementById('recordsTableHost');
+    if (!gasUrl) {
+      tableHost.innerHTML = '<p style="padding:20px; text-align:center; color:var(--bad);">GAS URLが設定されていません。右上の「⚙️ シート連携」からURLを設定してください。</p>';
+      return;
+    }
+    tableHost.innerHTML = '<p style="padding:20px; text-align:center; color:var(--ink-soft);">スプレッドシートからデータを読み込んでいます...</p>';
+    
+    // 通常のfetchリクエストを試行
+    fetch(gasUrl, { method: 'GET', redirect: 'follow' })
+      .then(function(res){
+        if (!res.ok) throw new Error('HTTP status: ' + res.status);
+        return res.json();
+      })
+      .then(function(res){
+        if (res && res.status === 'success' && Array.isArray(res.data)) {
+          rawSheetRecords = res.data;
+          renderFilteredRecords();
+        } else {
+          tableHost.innerHTML = '<p style="padding:20px; text-align:center; color:var(--bad);">データの取得形式が不適切です。GASに doGet(e) が正しく実装されているかご確認ください。</p>';
+        }
+      })
+      .catch(function(err){
+        console.warn('Standard fetch failed, trying JSONP fallback...', err);
+        // CORS等のエラーが発生した場合は JSONP による読み込みに切り替え
+        loadRecordsViaJsonp(function(errJsonp, resJsonp) {
+          if (!errJsonp && resJsonp && resJsonp.status === 'success' && Array.isArray(resJsonp.data)) {
+            rawSheetRecords = resJsonp.data;
+            renderFilteredRecords();
+          } else {
+            tableHost.innerHTML = `
+              <div style="padding:16px; color:var(--bad); font-size:13.5px; line-height:1.6;">
+                <strong>❌ データの読み込みに失敗しました</strong><br>
+                【解決のためのチェックリスト】
+                <ol style="margin:8px 0 0; padding-left:20px; color:var(--ink);">
+                  <li><b>GASのデプロイ更新:</b> GAS側に新しいコード（<code>doGet</code>含む）を貼り付けた後、<b>「デプロイ」＞「新しいデプロイ」</b>を作成しましたか？（※既存デプロイの更新では反映されない場合があります）</li>
+                  <li><b>アクセス権限:</b> デプロイ設定の「アクセスできるユーザー」が「<b>全員 (Anyone)</b>」になっていますか？</li>
+                  <li><b>最新コードの反映:</b> 右上の「⚙️ シート連携」モーダル内にある最新のGASコードを貼り付け直してください。</li>
+                </ol>
+              </div>`;
+          }
+        });
+      });
+  }
+
+  function loadRecordsViaJsonp(callback) {
+    const callbackName = 'gasCallback_' + Math.round(1000000 * Math.random());
+    window[callbackName] = function(data) {
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      callback(null, data);
+    };
+
+    const script = document.createElement('script');
+    const sep = gasUrl.indexOf('?') >= 0 ? '&' : '?';
+    script.src = gasUrl + sep + 'callback=' + callbackName;
+    script.onerror = function() {
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      callback(new Error('JSONP load failed'));
+    };
+    document.body.appendChild(script);
+  }
+
+  // スプレッドシートの値は生徒が入力した文字なので、HTMLとして解釈させずに表示する
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function renderFilteredRecords() {
+    const gradeF = document.getElementById('filterGrade').value;
+    const classF = document.getElementById('filterClass').value;
+    const modeF = document.getElementById('filterMode').value;
+    const tableHost = document.getElementById('recordsTableHost');
+
+    if (rawSheetRecords.length <= 1) {
+      tableHost.innerHTML = '<p style="padding:20px; text-align:center; color:var(--ink-soft);">データが存在しないか、ヘッダー行のみです。</p>';
+      document.getElementById('sumCount').textContent = '0';
+      document.getElementById('sumAvg').textContent = '-';
+      document.getElementById('sumMax').textContent = '-';
+      return;
+    }
+
+    const rows = rawSheetRecords.slice(1).map(function(r) {
+      return {
+        time: r[0] || '',
+        grade: String(r[1] || ''),
+        classGroup: String(r[2] || ''),
+        num: String(r[3] || ''),
+        name: String(r[4] || ''),
+        mode: String(r[5] || ''),
+        score: Number(r[6] || 0),
+        total: Number(r[7] || 0)
+      };
+    });
+
+    const filtered = rows.filter(function(r) {
+      if (gradeF && r.grade !== gradeF) return false;
+      if (classF && r.classGroup !== classF) return false;
+      if (modeF && !r.mode.includes(modeF)) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      tableHost.innerHTML = '<p style="padding:20px; text-align:center; color:var(--ink-soft);">条件に一致する記録が見つかりませんでした。</p>';
+      document.getElementById('sumCount').textContent = '0';
+      document.getElementById('sumAvg').textContent = '-';
+      document.getElementById('sumMax').textContent = '-';
+      return;
+    }
+
+    const scores = filtered.map(function(f){ return f.score; });
+    const sum = scores.reduce(function(a,b){ return a+b; }, 0);
+    const avg = (sum / scores.length).toFixed(1);
+    const max = Math.max.apply(null, scores);
+
+    document.getElementById('sumCount').textContent = filtered.length;
+    document.getElementById('sumAvg').textContent = avg + '点';
+    document.getElementById('sumMax').textContent = max + '点';
+
+    let html = `<table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+      <thead>
+        <tr style="background:var(--paper); border-bottom:1px solid var(--line);">
+          <th style="padding:8px 12px;">日時</th>
+          <th style="padding:8px 12px;">年-組-番</th>
+          <th style="padding:8px 12px;">氏名</th>
+          <th style="padding:8px 12px;">モード</th>
+          <th style="padding:8px 12px; text-align:right;">スコア</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    filtered.slice().reverse().forEach(function(r) {
+      const clsStr = `${r.grade?r.grade+'年':''}${r.classGroup?r.classGroup+'組':''}${r.num?r.num+'番':''}`;
+      html += `<tr style="border-bottom:1px solid var(--line);">
+        <td style="padding:8px 12px; white-space:nowrap; color:var(--ink-soft);">${esc(r.time)}</td>
+        <td style="padding:8px 12px; white-space:nowrap;">${esc(clsStr || '-')}</td>
+        <td style="padding:8px 12px; font-weight:700;">${esc(r.name || '-')}</td>
+        <td style="padding:8px 12px;">${esc(r.mode || '-')}</td>
+        <td style="padding:8px 12px; text-align:right; font-weight:700; color:var(--accent);">${r.score} / ${r.total}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    tableHost.innerHTML = html;
+  }
+
+  document.getElementById('newProblemBtn').addEventListener('click', renderProblem);
+  document.getElementById('nextBtn').addEventListener('click', handleNext);
+  document.getElementById('diffGroup').addEventListener('click', function(e) {
+    if(mode==='challenge') return;
+    const btn = e.target.closest('button[data-d]');
+    if(!btn) return;
+    difficulty = btn.dataset.d;
+    const buttons = document.querySelectorAll('#diffGroup button');
+    buttons.forEach(function(b){
+      b.setAttribute('aria-pressed', String(b===btn));
+    });
+    renderProblem();
+  });
+  document.getElementById('modeGroup').addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-m]');
+    if(!btn || btn.dataset.m===mode) return;
+    switchMode(btn.dataset.m);
+  });
+
+  renderStats();
+  renderProblem();
+})();
+</script>
+</body>
+</html>

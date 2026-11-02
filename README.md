@@ -47,6 +47,10 @@
 
 `probability/print.html` を開いて「印刷する」を押すと、A4のプリントを印刷できます。内容は、確率の基本・見分ける順番・まちがえやすいポイント・8つの解き方のまとめが2ページ、確認テスト全31問、解答です。同じ内容のPDFが `probability/print.pdf` にあります。問題と解説のデータは `probability/data.js` にまとめてあり、アプリとプリントの両方で使っています。
 
+## 二次不等式ラボ（高校数学Ⅰ）
+
+`quadratic/index.html` を開くと使えます。グラフと数直線を見比べながら、二次不等式の解を4つの選択肢から選ぶアプリです。練習モードと、10問の挑戦モードがあります。生徒情報を入力すると、解答結果を Google スプレッドシート（Google Apps Script）に送信できます。
+
 ## Render で公開する
 
 リポジトリにある `render.yaml` を使うと、Render（render.com）の静的サイトとして公開できます。private のリポジトリのままでも公開できます。
@@ -64,3 +68,4 @@
 | 順列・組合せトレーナー | `/combinatorics/` |
 | 確率の解き方ナビ | `/probability/`（プリントは `/probability/print.html`） |
 | 場合の数 パターン練習 | `/patterns/`（プリントは `/patterns/print.html`） |
+| 二次不等式ラボ | `/quadratic/` |
