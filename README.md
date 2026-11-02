@@ -44,3 +44,20 @@
 ### 確率のプリント
 
 `probability/print.html` を開いて「印刷する」を押すと、A4のプリントを印刷できます。内容は、確率の基本・見分ける順番・まちがえやすいポイント・8つの解き方のまとめが2ページ、確認テスト全31問、解答です。同じ内容のPDFが `probability/print.pdf` にあります。問題と解説のデータは `probability/data.js` にまとめてあり、アプリとプリントの両方で使っています。
+
+## Render で公開する
+
+リポジトリにある `render.yaml` を使うと、Render（render.com）の静的サイトとして公開できます。private のリポジトリのままでも公開できます。
+
+1. https://render.com に GitHub アカウントでサインアップする
+2. ダッシュボードで **New** → **Blueprint** を選び、`ttsyk1227-art/math` を接続する（一覧にないときは **Configure account** でアクセスを許可する）
+3. 内容を確認して **Apply**（または **Deploy Blueprint**）を押す
+
+1〜2分で `https://math-apps.onrender.com/` のようなURLで公開されます（名前が使われているときは、URLの後ろに文字が付きます）。`main` ブランチを更新すると、自動で公開し直されます。
+
+| アプリ | パス |
+|---|---|
+| 計算ドリル | `/` |
+| 順列・組合せトレーナー | `/combinatorics/` |
+| 確率の解き方ナビ | `/probability/`（プリントは `/probability/print.html`） |
+| 場合の数 パターン練習 | `/patterns/`（プリントは `/patterns/print.html`） |
