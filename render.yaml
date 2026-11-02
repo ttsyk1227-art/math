@@ -1,0 +1,11 @@
+# Render（render.com）の設定ファイル。
+# ダッシュボードの New → Blueprint でこのリポジトリを選ぶと、この内容で静的サイトが作られる。
+# ビルドは不要なので、リポジトリのファイルをそのまま公開する。
+services:
+  - type: web
+    runtime: static
+    name: math-apps
+    branch: main
+    buildCommand: echo "ビルドは不要です"
+    staticPublishPath: .
+    pullRequestPreviewsEnabled: false
