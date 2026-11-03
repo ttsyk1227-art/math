@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二次不等式マスター - 段階的インタラクティブ学習</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <!-- MathJax for rendering math equations -->
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+    <!-- Chart.js for graph visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1e293b;
+        }
+        .step-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .step-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(0.5);
+        }
+        .math-box {
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+        @media (max-width: 640px) {
+            .math-box {
+                font-size: 1.05rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen py-6 px-3 sm:px-6 md:px-8 flex justify-center items-start">
+
+<div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white p-6 sm:p-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <a href="../" class="inline-block mb-2 text-sm text-blue-100 hover:text-white underline">← アプリ一覧へ</a>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">二次不等式マスター</h1>
+                <p class="mt-1 text-blue-100 text-sm sm:text-base">グラフで視覚的に理解するステップバイステップ演習</p>
+            </div>
+            <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
+                <span class="text-xs sm:text-sm font-medium text-blue-100">連続正解数:</span>
+                <span id="streak-count" class="text-xl sm:text-2xl font-black text-yellow-300">0</span>
+                <span class="text-xs sm:text-sm font-medium text-blue-100 ml-2">総正解数:</span>
+                <span id="total-count" class="text-xl sm:text-2xl font-black text-white">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="p-4 sm:p-6 md:p-8 space-y-8">
+        <!-- Student Info & Finish Button Bar -->
+        <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
+                <div class="flex items-center gap-2 text-indigo-900 font-bold">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span>生徒情報</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label for="student-class" class="block text-xs font-semibold text-slate-600 mb-1">クラス</label>
+                    <input type="text" id="student-class" placeholder="例: 1年2組" class="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="student-number" class="block text-xs font-semibold text-slate-600 mb-1">出席番号</label>
+                    <input type="text" id="student-number" placeholder="例: 15番" class="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="student-name" class="block text-xs font-semibold text-slate-600 mb-1">氏名</label>
+                    <input type="text" id="student-name" placeholder="例: 山田 太郎" class="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Stats & Finish Action -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <div class="flex items-center gap-4 text-xs sm:text-sm font-semibold text-slate-700 bg-white px-3 py-2 rounded-lg border border-indigo-100 shadow-inner">
+                    <span>回答数: <strong id="stats-total" class="text-indigo-600">0</strong></span>
+                    <span>正答数: <strong id="stats-correct" class="text-emerald-600">0</strong></span>
+                    <span>誤答数: <strong id="stats-wrong" class="text-rose-600">0</strong></span>
+                </div>
+                <button id="finish-btn" type="button" class="bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold py-2.5 px-6 rounded-xl transition shadow-md flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    学習を終了して記録を送信
+                </button>
+            </div>
+        </div>
+
+        <!-- Controls & Mode Selector -->
+        <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-2">
+                <label for="difficulty-select" class="text-sm font-semibold text-slate-700">出題モード:</label>
+                <select id="difficulty-select" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5 font-medium shadow-sm">
+                    <option value="mixed" selected>全パターン (ランダム)</option>
+                    <option value="two_roots">異なる2つの実数解 (D > 0)</option>
+                    <option value="one_root">重解 (D = 0)</option>
+                    <option value="no_roots">解なし (D < 0)</option>
+                    <option value="neg_a">x²の係数が負 (a < 0)</option>
+                </select>
+            </div>
+            <button id="new-problem-btn" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-2.5 px-6 rounded-lg transition duration-150 shadow-md flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                新しい問題をつくる
+            </button>
+        </div>
+
+        <!-- Problem Equation Box -->
+        <div id="problem-box" class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-6 sm:p-8 text-center shadow-lg relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+            <span class="inline-block bg-blue-500/20 text-blue-300 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-2 border border-blue-400/30">解くべき問題</span>
+            <div id="problem-math" class="math-box text-2xl sm:text-4xl font-bold my-3 text-amber-300 tracking-wide">
+                <!-- Math Jax equation inserted here -->
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 mt-2">下のステップに従って、グラフの形と不等式の表す範囲を考えよう。</p>
+        </div>
+
+        <!-- Step 1: Real Roots / Intercepts -->
+        <div id="step-1" class="step-card bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-blue-600 text-white rounded-xl h-9 w-9 flex items-center justify-center font-bold text-lg shadow-sm">1</div>
+                <div>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-800">方程式 \(f(x) = 0\) の解（\(x\) 軸との交点）を調べよう</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">まず右辺を 0 とおいた2次方程式の解の個数と値を求めます。</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button type="button" class="root-count-btn border-2 border-slate-200 hover:border-blue-400 rounded-xl p-3 text-center transition font-semibold text-slate-700 flex flex-col items-center gap-1" data-count="2">
+                        <span class="text-base">異なる2つの実数解</span>
+                        <span class="text-xs text-slate-400 font-normal">\(D > 0\) （交点2つ）</span>
+                    </button>
+                    <button type="button" class="root-count-btn border-2 border-slate-200 hover:border-blue-400 rounded-xl p-3 text-center transition font-semibold text-slate-700 flex flex-col items-center gap-1" data-count="1">
+                        <span class="text-base">重解（1つ）</span>
+                        <span class="text-xs text-slate-400 font-normal">\(D = 0\) （接する）</span>
+                    </button>
+                    <button type="button" class="root-count-btn border-2 border-slate-200 hover:border-blue-400 rounded-xl p-3 text-center transition font-semibold text-slate-700 flex flex-col items-center gap-1" data-count="0">
+                        <span class="text-base">実数解なし</span>
+                        <span class="text-xs text-slate-400 font-normal">\(D < 0\) （交点なし）</span>
+                    </button>
+                </div>
+
+                <!-- Input area for roots -->
+                <div id="root-inputs-container" class="hidden bg-slate-50 p-4 rounded-xl border border-slate-200 mt-3">
+                    <p class="text-xs sm:text-sm font-semibold text-slate-600 mb-3" id="root-input-label">交点の \(x\) 座標を入力してください（小さい順）：</p>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div id="root1-box" class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-slate-600">\(x_1 =\)</span>
+                            <input type="number" id="root1-input" step="any" class="w-24 bg-white border border-slate-300 rounded-lg p-2 text-center text-slate-800 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div id="root2-box" class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-slate-600">\(x_2 =\)</span>
+                            <input type="number" id="root2-input" step="any" class="w-24 bg-white border border-slate-300 rounded-lg p-2 text-center text-slate-800 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <div id="step1-feedback" class="text-sm font-bold flex-1 mr-2"></div>
+                    <button id="check-step1-btn" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">
+                        判定する
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Parabola Convexity & Graph Visualizer -->
+        <div id="step-2" class="step-card step-disabled bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-blue-600 text-white rounded-xl h-9 w-9 flex items-center justify-center font-bold text-lg shadow-sm">2</div>
+                <div>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-800">グラフの凹凸（開く向き）を選択して確認しよう</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">\(x^2\) の係数 \(a\) の符号からグラフの向きを選びます。</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <button type="button" class="direction-btn border-2 border-slate-200 hover:border-blue-400 rounded-xl p-4 text-center transition flex flex-col items-center justify-center gap-2" data-dir="up">
+                        <span class="text-3xl font-black text-blue-600">∪</span>
+                        <span class="font-bold text-slate-800 text-sm sm:text-base">下に凸 (\(a > 0\))</span>
+                    </button>
+                    <button type="button" class="direction-btn border-2 border-slate-200 hover:border-blue-400 rounded-xl p-4 text-center transition flex flex-col items-center justify-center gap-2" data-dir="down">
+                        <span class="text-3xl font-black text-indigo-600">∩</span>
+                        <span class="font-bold text-slate-800 text-sm sm:text-base">上に凸 (\(a < 0\))</span>
+                    </button>
+                </div>
+
+                <!-- Canvas Graph Plot Area -->
+                <div id="graph-wrapper" class="hidden bg-slate-900 rounded-xl p-4 border border-slate-800">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-slate-400">放物線と \(x\) 軸の位置関係</span>
+                        <span id="inequality-target-badge" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono"></span>
+                    </div>
+                    <div class="relative w-full h-56 sm:h-64">
+                        <canvas id="graphCanvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <div id="step2-feedback" class="text-sm font-bold flex-1 mr-2"></div>
+                    <button id="check-step2-btn" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">
+                        グラフを描画
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Final Solution Selection -->
+        <div id="step-3" class="step-card step-disabled bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-blue-600 text-white rounded-xl h-9 w-9 flex items-center justify-center font-bold text-lg shadow-sm">3</div>
+                <div>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-800">グラフから不等式の解を読み取ろう</h3>
+                    <p class="text-xs sm:text-sm text-slate-500">不等号の向き（\(> 0, < 0, \ge 0, \le 0\)）に対応する \(x\) の範囲を選びます。</p>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 sm:p-4 mb-4 text-center">
+                <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase block mb-1">【解く問題】</span>
+                <div id="step3-problem-math" class="text-xl sm:text-2xl font-bold text-indigo-950">
+                    <!-- MathJax equation re-inserted here -->
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div id="solution-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Dynamic option buttons generated via JS -->
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <div id="step3-feedback" class="text-sm font-bold flex-1 mr-2"></div>
+                    <button id="check-step3-btn" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">
+                        最終回答をチェック
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success & Explanation Card -->
+        <div id="success-card" class="hidden bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-6 sm:p-8 shadow-xl text-center">
+            <div class="text-5xl sm:text-6xl mb-3">✨ 🎉 ✨</div>
+            <h3 class="text-2xl sm:text-3xl font-extrabold mb-2">正解！完璧です！</h3>
+            <p id="explanation-text" class="text-sm sm:text-base text-emerald-50 max-w-xl mx-auto my-4 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 text-left leading-relaxed">
+                <!-- Dynamically generated thorough explanation -->
+            </p>
+            <button id="next-problem-btn" class="bg-white text-emerald-800 hover:bg-emerald-50 font-black py-3 px-8 rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 text-base sm:text-lg">
+                次の問題へ挑戦する ➔
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500">
+        二次不等式マスター - 数学Ⅰ 対話型学習支援ツール
+    </footer>
+</div>
+
+<!-- Finish Modal -->
+<div id="finish-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-fade-in">
+        <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+            <span>🎓</span> 学習結果の記録と送信
+        </h3>
+        <div id="modal-student-summary" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm space-y-1 font-medium text-slate-700">
+            <!-- Student details preview -->
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                <span class="block text-xs font-semibold text-indigo-600">総回答数</span>
+                <span id="modal-stat-total" class="text-xl font-bold text-indigo-900">0</span>
+            </div>
+            <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                <span class="block text-xs font-semibold text-emerald-600">正答数</span>
+                <span id="modal-stat-correct" class="text-xl font-bold text-emerald-900">0</span>
+            </div>
+            <div class="bg-rose-50 p-3 rounded-xl border border-rose-100">
+                <span class="block text-xs font-semibold text-rose-600">誤答数</span>
+                <span id="modal-stat-wrong" class="text-xl font-bold text-rose-900">0</span>
+            </div>
+        </div>
+
+        <div id="modal-status-msg" class="text-sm text-center font-medium"></div>
+
+        <div class="flex justify-end gap-3 pt-2">
+            <button type="button" id="close-modal-btn" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">
+                キャンセル
+            </button>
+            <button type="button" id="confirm-submit-btn" class="px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition flex items-center gap-2">
+                スプレッドシートへ送信
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // App State Variables
+    let currentProblem = null;
+    let selectedRootCount = null;
+    let selectedDirection = null;
+    let selectedSolutionIndex = null;
+    let streakCount = 0;
+    let totalCount = 0;
+    let chartInstance = null;
+
+    // Track detailed stats
+    let totalAnswersCount = 0;
+    let correctAnswersCount = 0;
+    let wrongAnswersCount = 0;
+    let currentProblemAttempted = false; // Prevents double counting on same problem
+
+    // Default GAS Web App URL provided by user
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycby4a9XObOyeG1N2k_2w4OVVvhYbgJLGwm7W0fNfGSXBgy64zqYugwDmOisZv83PFLAx/exec';
+
+    // DOM Elements Extensions
+    const statsTotalEl = document.getElementById('stats-total');
+    const statsCorrectEl = document.getElementById('stats-correct');
+    const statsWrongEl = document.getElementById('stats-wrong');
+
+    // Helper function to update header statistics counter
+    function updateStatsUI() {
+        if (statsTotalEl) statsTotalEl.innerText = totalAnswersCount;
+        if (statsCorrectEl) statsCorrectEl.innerText = correctAnswersCount;
+        if (statsWrongEl) statsWrongEl.innerText = wrongAnswersCount;
+    }
+
+    const finishBtn = document.getElementById('finish-btn');
+    const finishModal = document.getElementById('finish-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const confirmSubmitBtn = document.getElementById('confirm-submit-btn');
+
+    // Load saved GAS URL if available or use default
+    let gasWebAppUrl = localStorage.getItem('gas_web_app_url') || DEFAULT_GAS_URL;
+
+    // DOM Elements
+    const streakEl = document.getElementById('streak-count');
+    const totalEl = document.getElementById('total-count');
+    const difficultySelect = document.getElementById('difficulty-select');
+    const newProblemBtn = document.getElementById('new-problem-btn');
+    const problemMathEl = document.getElementById('problem-math');
+
+    const step1Card = document.getElementById('step-1');
+    const rootCountBtns = document.querySelectorAll('.root-count-btn');
+    const rootInputsContainer = document.getElementById('root-inputs-container');
+    const root1Box = document.getElementById('root1-box');
+    const root2Box = document.getElementById('root2-box');
+    const root1Input = document.getElementById('root1-input');
+    const root2Input = document.getElementById('root2-input');
+    const step1Feedback = document.getElementById('step1-feedback');
+    const checkStep1Btn = document.getElementById('check-step1-btn');
+
+    const step2Card = document.getElementById('step-2');
+    const directionBtns = document.querySelectorAll('.direction-btn');
+    const graphWrapper = document.getElementById('graph-wrapper');
+    const step2Feedback = document.getElementById('step2-feedback');
+    const checkStep2Btn = document.getElementById('check-step2-btn');
+
+    const step3Card = document.getElementById('step-3');
+    const solutionOptionsGrid = document.getElementById('solution-options-grid');
+    const step3Feedback = document.getElementById('step3-feedback');
+    const checkStep3Btn = document.getElementById('check-step3-btn');
+
+    const successCard = document.getElementById('success-card');
+    const explanationText = document.getElementById('explanation-text');
+    const nextProblemBtn = document.getElementById('next-problem-btn');
+
+    // Generate Problem Logic
+    function generateProblem() {
+        const diffSelect = document.getElementById('difficulty-select');
+        let type = diffSelect ? diffSelect.value : 'mixed';
+        if (type === 'mixed') {
+            const types = ['two_roots', 'one_root', 'no_roots', 'neg_a'];
+            type = types[Math.floor(Math.random() * types.length)];
+        }
+
+        let a, b, c, r1, r2;
+        const operators = ['>', '<', '\\geq', '\\leq'];
+        const op = operators[Math.floor(Math.random() * operators.length)];
+
+        if (type === 'neg_a') {
+            a = -1;
+            r1 = Math.floor(Math.random() * 7) - 3; // -3 to 3
+            r2 = r1 + Math.floor(Math.random() * 4) + 1; // r2 > r1
+            b = r1 + r2;
+            c = -r1 * r2;
+            return { a, b, c, roots: [r1, r2], count: 2, op };
+        } else if (type === 'one_root') {
+            a = 1; // 必ず a > 0 (係数が正)
+            r1 = Math.floor(Math.random() * 9) - 4; // -4 to 4
+            r2 = r1;
+            b = -2 * a * r1;
+            c = a * r1 * r1;
+            return { a, b, c, roots: [r1], count: 1, op };
+        } else if (type === 'no_roots') {
+            a = 1; // 必ず a > 0 (係数が正)
+            const h = Math.floor(Math.random() * 7) - 3;
+            const k = Math.floor(Math.random() * 3) + 1; // 頂点のy座標 > 0
+            b = -2 * a * h;
+            c = a * h * h + k;
+            return { a, b, c, roots: [], count: 0, op };
+        } else {
+            a = 1; // 必ず a > 0 (係数が正)
+            r1 = Math.floor(Math.random() * 7) - 4; // -4 to 2
+            r2 = r1 + Math.floor(Math.random() * 4) + 1; // r2 > r1
+            b = -(r1 + r2);
+            c = r1 * r2;
+            return { a, b, c, roots: [r1, r2], count: 2, op };
+        }
+    }
+
+    // Helper: Format Quadratic Polynomial to TeX string
+    function formatTeX(a, b, c, op) {
+        let str = "";
+        // a x^2
+        if (a === 1) str += "x^2";
+        else if (a === -1) str += "-x^2";
+        else str += `${a}x^2`;
+
+        // b x
+        if (b > 0) str += (b === 1 ? "+x" : `+${b}x`);
+        else if (b < 0) str += (b === -1 ? "-x" : `${b}x`);
+
+        // c
+        if (c > 0) str += `+${c}`;
+        else if (c < 0) str += `${c}`;
+
+        if (str === "") str = "0";
+
+        str += ` ${op} 0`;
+        return `\\[${str}\\]`;
+    }
+
+    // Reset & Load New Problem
+    function loadNewProblem(scrollToTop = false) {
+        currentProblem = generateProblem();
+        selectedRootCount = null;
+        selectedDirection = null;
+        selectedSolutionIndex = null;
+        currentProblemAttempted = false;
+
+        // Reset Steps UI
+        step1Card.classList.remove('step-disabled');
+        step2Card.classList.add('step-disabled');
+        step3Card.classList.add('step-disabled');
+        successCard.classList.add('hidden');
+
+        // Step 1 Reset
+        rootCountBtns.forEach(b => b.classList.remove('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400'));
+        rootInputsContainer.classList.add('hidden');
+        root1Input.value = '';
+        root2Input.value = '';
+        step1Feedback.innerHTML = '';
+        checkStep1Btn.disabled = false;
+
+        // Step 2 Reset
+        directionBtns.forEach(b => b.classList.remove('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400'));
+        graphWrapper.classList.add('hidden');
+        step2Feedback.innerHTML = '';
+        checkStep2Btn.disabled = false;
+
+        // Step 3 Reset
+        solutionOptionsGrid.innerHTML = '';
+        step3Feedback.innerHTML = '';
+        checkStep3Btn.disabled = false;
+
+        // Render Equations
+        const formattedTex = formatTeX(currentProblem.a, currentProblem.b, currentProblem.c, currentProblem.op);
+        problemMathEl.innerHTML = formattedTex;
+        const step3ProblemMathEl = document.getElementById('step3-problem-math');
+        if (step3ProblemMathEl) {
+            step3ProblemMathEl.innerHTML = formattedTex;
+        }
+        
+        // Typeset MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([problemMathEl, step3ProblemMathEl]);
+        }
+
+        // Scroll to problem box if requested
+        if (scrollToTop) {
+            setTimeout(() => {
+                const problemBox = document.getElementById('problem-box');
+                if (problemBox) {
+                    problemBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 50);
+        }
+    }
+
+    // Root Count Selection
+    rootCountBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            rootCountBtns.forEach(b => b.classList.remove('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400'));
+            btn.classList.add('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400');
+            selectedRootCount = parseInt(btn.dataset.count);
+
+            if (selectedRootCount === 2) {
+                rootInputsContainer.classList.remove('hidden');
+                root1Box.classList.remove('hidden');
+                root2Box.classList.remove('hidden');
+                document.getElementById('root-input-label').innerText = '交点の x 座標を入力してください（小さい順）：';
+            } else if (selectedRootCount === 1) {
+                rootInputsContainer.classList.remove('hidden');
+                root1Box.classList.remove('hidden');
+                root2Box.classList.add('hidden');
+                document.getElementById('root-input-label').innerText = '接点の x 座標を入力してください：';
+            } else {
+                rootInputsContainer.classList.add('hidden');
+            }
+        });
+    });
+
+    // Direction Selection
+    directionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            directionBtns.forEach(b => b.classList.remove('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400'));
+            btn.classList.add('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400');
+            selectedDirection = btn.dataset.dir;
+        });
+    });
+
+    // Step 1 Check
+    checkStep1Btn.addEventListener('click', () => {
+        if (selectedRootCount === null) {
+            showFeedback(step1Feedback, '解の個数（交点の状態）を選択してください。', 'error');
+            return;
+        }
+
+        if (selectedRootCount !== currentProblem.count) {
+            const discText = currentProblem.count === 2 ? '判別式 D > 0（交点2個）です。' :
+                             currentProblem.count === 1 ? '判別式 D = 0（重解）です。' : '判別式 D < 0（実数解なし）です。';
+            showFeedback(step1Feedback, `おっと！${discText} もう一度計算してみましょう。`, 'error');
+            return;
+        }
+
+        // Validate values if count > 0
+        if (currentProblem.count === 2) {
+            const v1 = parseFloat(root1Input.value);
+            const v2 = parseFloat(root2Input.value);
+            if (isNaN(v1) || isNaN(v2)) {
+                showFeedback(step1Feedback, 'x の値を両方入力してください。', 'error');
+                return;
+            }
+            if (Math.abs(v1 - currentProblem.roots[0]) < 0.01 && Math.abs(v2 - currentProblem.roots[1]) < 0.01) {
+                // Correct!
+            } else if (Math.abs(v1 - currentProblem.roots[1]) < 0.01 && Math.abs(v2 - currentProblem.roots[0]) < 0.01) {
+                showFeedback(step1Feedback, '値は合っています！小さい順 (x₁ < x₂) に入力してください。', 'warning');
+                return;
+            } else {
+                showFeedback(step1Feedback, 'x の値が違います。因数分解や解の公式を確認しましょう。', 'error');
+                return;
+            }
+        } else if (currentProblem.count === 1) {
+            const v1 = parseFloat(root1Input.value);
+            if (isNaN(v1)) {
+                showFeedback(step1Feedback, 'x の値を入力してください。', 'error');
+                return;
+            }
+            if (Math.abs(v1 - currentProblem.roots[0]) >= 0.01) {
+                showFeedback(step1Feedback, '重解の x の値が間違っています。', 'error');
+                return;
+            }
+        }
+
+        showFeedback(step1Feedback, '正解です！ステップ1クリア！', 'success');
+        checkStep1Btn.disabled = true;
+        step2Card.classList.remove('step-disabled');
+        step2Card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    // Step 2 Check & Graph Rendering
+    checkStep2Btn.addEventListener('click', () => {
+        if (!selectedDirection) {
+            showFeedback(step2Feedback, 'グラフの凹凸（開く向き）を選択してください。', 'error');
+            return;
+        }
+
+        const expectedDir = currentProblem.a > 0 ? 'up' : 'down';
+        if (selectedDirection !== expectedDir) {
+            const text = currentProblem.a > 0 ? 'x² の係数がプラスなので「下に凸 (∪)」です。' : 'x² の係数がマイナスなので「上に凸 (∩)」です。';
+            showFeedback(step2Feedback, `向きが違います。${text}`, 'error');
+            return;
+        }
+
+        showFeedback(step2Feedback, '正解！グラフを描画しました。', 'success');
+        checkStep2Btn.disabled = true;
+        graphWrapper.classList.remove('hidden');
+        renderGraph();
+
+        generateStep3Options();
+        step3Card.classList.remove('step-disabled');
+        setTimeout(() => {
+            step3Card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 500);
+    });
+
+    // Canvas Chart.js Renderer
+    function renderGraph() {
+        const ctx = document.getElementById('graphCanvas').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        const a = currentProblem.a;
+        const b = currentProblem.b;
+        const c = currentProblem.c;
+
+        // Determine X axis domain
+        let xMin = -5, xMax = 5;
+        if (currentProblem.count === 2) {
+            xMin = currentProblem.roots[0] - 2.5;
+            xMax = currentProblem.roots[1] + 2.5;
+        } else if (currentProblem.count === 1) {
+            xMin = currentProblem.roots[0] - 4;
+            xMax = currentProblem.roots[0] + 4;
+        }
+
+        const dataPoints = [];
+        for (let x = xMin; x <= xMax; x += 0.1) {
+            dataPoints.push({ x: parseFloat(x.toFixed(2)), y: a * x * x + b * x + c });
+        }
+
+        // Intercept points
+        const points = [];
+        if (currentProblem.count === 2) {
+            points.push({ x: currentProblem.roots[0], y: 0 });
+            points.push({ x: currentProblem.roots[1], y: 0 });
+        } else if (currentProblem.count === 1) {
+            points.push({ x: currentProblem.roots[0], y: 0 });
+        }
+
+        const badge = document.getElementById('inequality-target-badge');
+        const targetText = {
+            '>': 'y > 0（x軸より上）',
+            '\\geq': 'y ≧ 0（x軸より上と、x軸上）',
+            '<': 'y < 0（x軸より下）',
+            '\\leq': 'y ≦ 0（x軸より下と、x軸上）'
+        }[currentProblem.op];
+        badge.innerText = `注目領域: ${targetText}`;
+
+        chartInstance = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'y = f(x)',
+                        data: dataPoints,
+                        showLine: true,
+                        borderColor: '#38bdf8',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'x軸との交点',
+                        data: points,
+                        backgroundColor: '#f43f5e',
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        pointRadius: 7,
+                        pointHoverRadius: 9
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 800 },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'center',
+                        grid: { color: (c) => c.tick.value === 0 ? '#94a3b8' : '#334155', lineWidth: (c) => c.tick.value === 0 ? 2 : 1 },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'center',
+                        grid: { color: (c) => c.tick.value === 0 ? '#94a3b8' : '#334155', lineWidth: (c) => c.tick.value === 0 ? 2 : 1 },
+                        ticks: { color: '#94a3b8' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // Step 3 Options Generator
+    function generateStep3Options() {
+        solutionOptionsGrid.innerHTML = '';
+        const options = [];
+        const { a, roots, count, op } = currentProblem;
+        const [r1, r2] = roots;
+
+        let correctAnswerStr = "";
+
+        // Solve inequality logic
+        if (count === 2) {
+            const isGreater = (op === '>' || op === '\\geq');
+            const hasEquals = (op === '\\geq' || op === '\\leq');
+
+            const outer = (a > 0 && isGreater) || (a < 0 && !isGreater);
+            
+            if (outer) {
+                correctAnswerStr = hasEquals ? `x \\leq ${r1}, \\, ${r2} \\leq x` : `x < ${r1}, \\, ${r2} < x`;
+                options.push(correctAnswerStr);
+                options.push(hasEquals ? `${r1} \\leq x \\leq ${r2}` : `${r1} < x < ${r2}`);
+                options.push(hasEquals ? `x < ${r1}, \\, ${r2} < x` : `x \\leq ${r1}, \\, ${r2} \\leq x`);
+                options.push("すべての実数");
+            } else {
+                correctAnswerStr = hasEquals ? `${r1} \\leq x \\leq ${r2}` : `${r1} < x < ${r2}`;
+                options.push(correctAnswerStr);
+                options.push(hasEquals ? `x \\leq ${r1}, \\, ${r2} \\leq x` : `x < ${r1}, \\, ${r2} < x`);
+                options.push(hasEquals ? `${r1} < x < ${r2}` : `${r1} \\leq x \\leq ${r2}`);
+                options.push("解なし");
+            }
+        } else if (count === 1) {
+            // Double root (r1)
+            const isPosParabola = a > 0;
+            if (op === '>') {
+                correctAnswerStr = isPosParabola ? `x = ${r1} 以外のすべての実数` : `解なし`;
+            } else if (op === '\\geq') {
+                correctAnswerStr = isPosParabola ? `すべての実数` : `x = ${r1}`;
+            } else if (op === '<') {
+                correctAnswerStr = isPosParabola ? `解なし` : `x = ${r1} 以外のすべての実数`;
+            } else if (op === '\\leq') {
+                correctAnswerStr = isPosParabola ? `x = ${r1}` : `すべての実数`;
+            }
+
+            // 重解のときの答えはこの4通り。同じ意味の選択肢が2つ並ばないように、この4つだけを出す
+            options.push("すべての実数", "解なし", `x = ${r1}`, `x = ${r1} 以外のすべての実数`);
+        } else {
+            // Count === 0 (No roots)
+            const isAboveX = a > 0;
+            if (op === '>' || op === '\\geq') {
+                correctAnswerStr = isAboveX ? "すべての実数" : "解なし";
+            } else {
+                correctAnswerStr = isAboveX ? "解なし" : "すべての実数";
+            }
+            options.push(correctAnswerStr);
+            options.push(correctAnswerStr === "すべての実数" ? "解なし" : "すべての実数");
+            options.push("x > 0");
+            options.push("x = 0");
+        }
+
+        // Deduplicate and Shuffle options
+        const uniqueOptions = Array.from(new Set(options));
+        const shuffled = uniqueOptions.sort(() => Math.random() - 0.5);
+
+        shuffled.forEach((optText) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'option-btn border-2 border-slate-200 hover:border-blue-400 rounded-xl p-4 text-center transition font-semibold text-slate-800 bg-white hover:bg-blue-50/50 shadow-sm flex items-center justify-center min-h-[60px]';
+            
+            if (optText.includes("すべての実数") || optText.includes("解なし") || optText.includes("以外")) {
+                btn.innerText = optText;
+            } else {
+                btn.innerHTML = `\\(${optText}\\)`;
+            }
+
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400'));
+                btn.classList.add('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-400');
+                selectedSolutionIndex = optText === correctAnswerStr;
+            });
+
+            solutionOptionsGrid.appendChild(btn);
+        });
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([solutionOptionsGrid]);
+        }
+
+        currentProblem.correctAnswerStr = correctAnswerStr;
+    }
+
+    // Step 3 Check & Complete Problem
+    checkStep3Btn.addEventListener('click', () => {
+        if (selectedSolutionIndex === null) {
+            showFeedback(step3Feedback, '解を選択してください。', 'error');
+            return;
+        }
+
+        const firstTry = !currentProblemAttempted;
+        if (firstTry) {
+            totalAnswersCount++;
+            currentProblemAttempted = true;
+        }
+
+        if (selectedSolutionIndex === true) {
+            showFeedback(step3Feedback, '大正解です！完璧にグラフから解を読み取れました！', 'success');
+            checkStep3Btn.disabled = true;
+
+            streakCount++;
+            totalCount++;
+            if (firstTry) correctAnswersCount++;
+            streakEl.innerText = streakCount;
+            totalEl.innerText = totalCount;
+            updateStatsUI();
+
+            // Generate detailed explanation with proper TeX delimiters
+            const p = currentProblem;
+            let expl = `【解説】<br>`;
+            expl += `1. \\(f(x) = 0\\) とおくと、\\(x\\) 軸との交点は `;
+            if (p.count === 2) expl += `\\(x = ${p.roots[0]}, \\, ${p.roots[1]}\\) です。<br>`;
+            else if (p.count === 1) expl += `\\(x = ${p.roots[0]}\\) (重解) です。<br>`;
+            else expl += `存在しません（\\(D < 0\\)）。<br>`;
+
+            expl += `2. \\(x^2\\) の係数が ${p.a > 0 ? '正なので下に凸（∪）' : '負なので上に凸（∩）'} です。<br>`;
+            expl += `3. 不等号 \\(${p.op} 0\\) に該当するグラフの位置（\\(y\\) の符号）を視覚的に追うことで、解は <strong>${/[ぁ-んァ-ヶ一-龠]/.test(p.correctAnswerStr) ? p.correctAnswerStr : `\\(${p.correctAnswerStr}\\)`}</strong> となります。`;
+
+            explanationText.innerHTML = expl;
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([explanationText]);
+            }
+
+            setTimeout(() => {
+                successCard.classList.remove('hidden');
+                successCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 600);
+
+        } else {
+            streakCount = 0;
+            if (firstTry) wrongAnswersCount++;
+            streakEl.innerText = streakCount;
+            updateStatsUI();
+            showFeedback(step3Feedback, '惜しい！グラフの「x軸の上側(y>0)」か「下側(y<0)」かをもう一度確認しましょう。', 'error');
+        }
+    });
+
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    // Modal Event Handlers
+    finishBtn.addEventListener('click', () => {
+        const cls = document.getElementById('student-class').value.trim() || '未入力';
+        const num = document.getElementById('student-number').value.trim() || '未入力';
+        const name = document.getElementById('student-name').value.trim() || '未入力';
+
+        document.getElementById('modal-student-summary').innerHTML = `
+            <div><strong>クラス:</strong> ${esc(cls)}</div>
+            <div><strong>出席番号:</strong> ${esc(num)}</div>
+            <div><strong>氏名:</strong> ${esc(name)}</div>
+        `;
+
+        document.getElementById('modal-stat-total').innerText = totalAnswersCount;
+        document.getElementById('modal-stat-correct').innerText = correctAnswersCount;
+        document.getElementById('modal-stat-wrong').innerText = wrongAnswersCount;
+        document.getElementById('modal-status-msg').innerHTML = '';
+
+        finishModal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => finishModal.classList.add('hidden'));
+
+    // Send Data to Google Sheets via GAS
+    confirmSubmitBtn.addEventListener('click', async () => {
+        const statusMsg = document.getElementById('modal-status-msg');
+        const cls = document.getElementById('student-class').value.trim() || '未指定';
+        const num = document.getElementById('student-number').value.trim() || '未指定';
+        const name = document.getElementById('student-name').value.trim() || '未指定';
+
+        if (!gasWebAppUrl) {
+            statusMsg.innerHTML = '<span class="text-amber-600 font-bold">⚠️ 送信先が設定されていません。先生に確認してください。</span>';
+            return;
+        }
+
+        statusMsg.innerHTML = '<span class="text-blue-600 font-bold">⏳ スプレッドシートへ送信中...</span>';
+        confirmSubmitBtn.disabled = true;
+
+        const payload = {
+            studentClass: cls,
+            studentNumber: num,
+            studentName: name,
+            totalAnswers: totalAnswersCount,
+            correctAnswers: correctAnswersCount,
+            wrongAnswers: wrongAnswersCount,
+            timestamp: new Date().toLocaleString('ja-JP')
+        };
+
+        try {
+            await fetch(gasWebAppUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            statusMsg.innerHTML = '<span class="text-emerald-600 font-bold">✅ 送信が完了しました！お疲れ様でした。</span>';
+            setTimeout(() => {
+                finishModal.classList.add('hidden');
+                confirmSubmitBtn.disabled = false;
+            }, 1800);
+        } catch (error) {
+            statusMsg.innerHTML = '<span class="text-rose-600 font-bold">❌ 送信エラーが発生しました。通信状態を確認して、もう一度送信してください。</span>';
+            confirmSubmitBtn.disabled = false;
+        }
+    });
+
+    // Helper Feedback Display
+    function showFeedback(el, msg, type) {
+        el.innerHTML = msg;
+        el.className = 'text-sm font-bold flex-1 mr-2 ' + (
+            type === 'error' ? 'text-rose-600' :
+            type === 'warning' ? 'text-amber-600' : 'text-emerald-600'
+        );
+    }
+
+    // Event Listeners for New Problem
+    newProblemBtn.addEventListener('click', () => loadNewProblem(true));
+    nextProblemBtn.addEventListener('click', () => loadNewProblem(true));
+    difficultySelect.addEventListener('change', () => loadNewProblem(true));
+
+    // Initial App Load
+    window.onload = () => loadNewProblem(false);
+
+</script>
+</body>
+</html>
