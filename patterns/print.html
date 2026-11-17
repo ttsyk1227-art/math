@@ -88,7 +88,7 @@
     .answers ol { margin: 2px 0 0; padding-left: 1.4em; }
     .group-break { break-before: page; }
 
-    .toolbar { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; justify-content: center; padding: 10px; background: #1b2430; }
+    .toolbar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 10px; background: #1b2430; }
     .toolbar button, .toolbar a { font: inherit; font-size: 10.5pt; font-weight: 700; padding: 6px 14px; border-radius: 6px; border: 0; background: #fff; color: #1b2430; cursor: pointer; text-decoration: none; }
   </style>
 </head>
@@ -96,6 +96,7 @@
   <div class="toolbar no-print">
     <button type="button" onclick="window.print()">印刷する</button>
     <button type="button" id="reroll">確認テストの問題を作り直す</button>
+    <button type="button" id="order-toggle"></button>
     <a href="./">練習アプリへ</a>
   </div>
 
@@ -130,7 +131,7 @@
       </div>
       <p class="name"><span></span>年 <span></span>組 <span></span>番　名前 <span class="n"></span></p>
     </header>
-    <p class="sub" style="margin-top:6px">まず、どの考え方を使うかを決めてから計算しよう。（各パターンから1問ずつ・全<span id="test-count"></span>問）</p>
+    <p class="sub" style="margin-top:6px">まず、どの考え方を使うかを決めてから計算しよう。（各パターンから1問ずつ<span id="test-order"></span>・全<span id="test-count"></span>問）</p>
     <ol class="test" id="test"></ol>
   </div>
 
@@ -180,14 +181,28 @@
           </tr>`).join('')}
       </table>`).join('');
 
-    // 確認テスト：各パターンから1問ずつ
+    // 確認テスト：各パターンから1問ずつ。?order=random のときは問題の順番を並べかえる
+    // （問題を全部作ってから並べかえるので、同じ seed ならパターン順と同じ問題が並ぶ）
+    const randomOrder = params.get('order') === 'random';
     const test = PATTERNS.map((p) => ({ p, ...p.gen() }));
+    if (randomOrder) {
+      for (let i = test.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [test[i], test[j]] = [test[j], test[i]]; }
+    }
     document.getElementById('test-count').textContent = test.length;
+    document.getElementById('test-order').textContent = randomOrder ? '・順番はランダム' : '';
+    // ランダムのときは［並べる］などのグループ名を出さず、どの考え方を使うかを自分で見分ける
     document.getElementById('test').innerHTML = test.map((t) => `
-      <li><span>${t.q} <span class="tag">［${GROUPS[t.p.g].name}］</span></span><span class="box">${t.unit || '通り'}</span></li>`).join('');
+      <li><span>${t.q}${randomOrder ? '' : ` <span class="tag">［${GROUPS[t.p.g].name}］</span>`}</span><span class="box">${t.unit || '通り'}</span></li>`).join('');
     document.getElementById('answers').innerHTML = test.map((t) => `
-      <li><span class="a">${fmt(t.ans)}${t.unit || '通り'}</span>　考え方：${t.p.short}（${t.p.cond}）
+      <li><span class="a">${fmt(t.ans)}${t.unit || '通り'}</span>　考え方：${t.p.short}（${t.p.id}　${t.p.cond}）
         <ol>${t.steps.map((s) => `<li>${s}</li>`).join('')}</ol></li>`).join('');
+
+    const orderToggle = document.getElementById('order-toggle');
+    orderToggle.textContent = randomOrder ? '問題をパターン順に戻す' : '問題の順番をランダムにする';
+    orderToggle.addEventListener('click', () => {
+      if (randomOrder) params.delete('order'); else params.set('order', 'random');
+      location.search = params.toString();
+    });
 
     document.getElementById('reroll').addEventListener('click', () => {
       params.set('seed', String(Math.floor(Date.now() % 100000)));
