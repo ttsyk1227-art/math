@@ -110,6 +110,7 @@
   <div class="toolbar no-print">
     <button type="button" onclick="window.print()">印刷する</button>
     <button type="button" id="reroll">確認テストの問題を作り直す</button>
+    <button type="button" id="order-toggle"></button>
     <a href="./">練習アプリへ</a>
   </div>
 
@@ -156,7 +157,7 @@
       </div>
       <p class="name"><span></span>年 <span></span>組 <span></span>番　名前 <span class="n"></span></p>
     </header>
-    <p class="sub" style="margin-top:6px">問題文の中の「サイン」に線を引き、使う解き方を書いてから計算しよう。答えは約分すること。（全<span id="test-count"></span>問）</p>
+    <p class="sub" style="margin-top:6px">問題文の中の「サイン」に線を引き、使う解き方を書いてから計算しよう。答えは約分すること。（<span id="test-order"></span>・全<span id="test-count"></span>問）</p>
     <div class="test-head"><span></span><span>解き方</span><span>答え</span></div>
     <ol class="test" id="test"></ol>
   </div>
@@ -203,15 +204,30 @@
         </section>`;
     }).join('');
 
-    // 確認テスト：すべての問題パターンから1問ずつ。解き方が順番でわからないように並べかえる
+    // 確認テスト：すべての問題パターンから1問ずつ
     const test = GENS.map((g) => ({ m: g.m, ...g.make() }));
-    for (let i = test.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [test[i], test[j]] = [test[j], test[i]]; }
+    // ふだんはランダムな順番。?order=method のときは、見分ける順番（ORDER）どおりに解き方ごとにまとめて並べる
+    // （問題を全部作ってから並べるので、同じ seed ならどちらの順番でも同じ問題になる）
+    const methodOrder = params.get('order') === 'method';
+    if (methodOrder) {
+      test.sort((x, y) => ORDER.indexOf(x.m) - ORDER.indexOf(y.m));
+    } else {
+      for (let i = test.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [test[i], test[j]] = [test[j], test[i]]; }
+    }
+    document.getElementById('test-order').textContent = methodOrder ? '解き方ごとに並べた順番' : '順番はランダム';
     document.getElementById('test-count').textContent = test.length;
     document.getElementById('test').innerHTML = test.map((t) => `
       <li><span class="q">${t.q}</span><span class="box"></span><span class="box">${t.unit ? `<span style="float:right">${t.unit}</span>` : ''}</span></li>`).join('');
     document.getElementById('answers').innerHTML = test.map((t) => `
       <li><span class="a">${F(...t.ans)}${t.unit || ''}</span><span class="m">解き方：${METHODS[t.m].name}</span>
         <ol>${t.steps.map((s) => `<li>${s}</li>`).join('')}</ol></li>`).join('');
+
+    const orderToggle = document.getElementById('order-toggle');
+    orderToggle.textContent = methodOrder ? '問題の順番をランダムにする' : '問題を解き方ごとに並べる';
+    orderToggle.addEventListener('click', () => {
+      if (methodOrder) params.delete('order'); else params.set('order', 'method');
+      location.search = params.toString();
+    });
 
     document.getElementById('reroll').addEventListener('click', () => {
       params.set('seed', String(Math.floor(Date.now() % 100000)));
