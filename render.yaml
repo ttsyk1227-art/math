@@ -6,6 +6,8 @@ services:
     runtime: static
     name: math-apps
     branch: main
+    # main ブランチにコミットが入るたびに、自動で公開し直す
+    autoDeployTrigger: commit
     buildCommand: echo "ビルドは不要です"
     staticPublishPath: .
     pullRequestPreviewsEnabled: false
